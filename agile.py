@@ -1,10 +1,18 @@
-from datetime import date
+from datetime import date, time, timedelta
+
 
 class StudySession:
     def __init__(self, goal:str, start:str, end:str) -> None:
         """Instantiate a study session with goal, start time, and end time"""
         self.goal = goal
+        self.start = time.fromisoformat(self._formatIsoString(start))
+        self.end = time.fromisoformat(self._formatIsoString(end))
         self.duration = self._calculateDuration(start, end)
+
+    def _formatIsoString(self, time:str) -> str:
+        if len(time) == 4:
+            time = "0" + time
+        return time + ":00"
 
     def _calculateDuration(self, starttime:str, endtime:str) -> int:
         """Helper method to convert string start and end times into minutes"""
@@ -20,11 +28,12 @@ class StudySession:
 
 
 class Day:
-    def __init__(self, datestring:str) -> None:
-        self.date = date.fromisoformat(
-                datestring[:4] + "-" + datestring[4:6] + "-" + datestring[6:]
-                )
+    def __init__(self, date:object) -> None:
+        self.date = date
         self.study_sessions = []
+
+    def __eq__(self, other) -> bool:
+        return self.date == other.date
 
     def getDayOfWeek(self) -> str:
         """Return full name of the weekday (e.g. 'Monday')"""
@@ -36,7 +45,17 @@ class Day:
 
     def generateSession(self, goal:str, start:str, end:str) -> None:
         """Add a study session to the day's list of study sessions"""
-        self.study_sessions.append(StudySession(goal, start, end))
+        ss = StudySession(goal, start, end)
+        if not self._newSessionOverlapsExisting(ss):
+            self.study_sessions.append(ss)
+        else:
+            raise AttributeError
+
+    def _newSessionOverlapsExisting(self, new_session):
+        for existing_session in self.study_sessions:
+            if existing_session.start < new_session.start < existing_session.end:
+                return True
+        return False
 
     def getSessionTotals(self) -> dict:
         """Sum the total minutes spent on learning goal and build goal this day"""
@@ -44,3 +63,22 @@ class Day:
         for session in self.study_sessions:
             totals[session.goal] += session.duration
         return totals
+
+
+class Iteration:
+    def __init__(self, start_date:str, duration:int, goals:dict) -> None:
+        self.first_day = date.fromisoformat(
+                start_date[:4] + "-" + start_date[4:6] + "-" + start_date[6:]
+                )
+        self.days = [Day(self.first_day+timedelta(days=i)) for i in range(duration)]
+        self.last_day = self.days[-1].date
+        self.time_goal = goals["time_goal"]
+        self.learning_goal = goals["learning_goal"]
+        self.build_goal = goals["build_goal"]
+
+    def getStartToEndString(self) -> str:
+        firstday_string = self.first_day.strftime("%B %-d")
+        lastday_string = self.last_day.strftime("%-d")
+        if self.first_day.strftime("%B") != self.last_day.strftime("%B"):
+            lastday_string = self.last_day.strftime("%B ") + lastday_string
+        return firstday_string + " - " + lastday_string
