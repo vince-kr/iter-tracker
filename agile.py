@@ -59,7 +59,7 @@ class Day:
 
     def getSessionTotals(self) -> dict:
         """Sum the total minutes spent on learning goal and build goal this day"""
-        totals = { "build": 0, "learn": 0 }
+        totals = { "build": 0, "learning": 0 }
         for session in self.study_sessions:
             totals[session.goal] += session.duration
         return totals
@@ -67,6 +67,7 @@ class Day:
 
 class Iteration:
     def __init__(self, start_date:str, duration:int, goals:dict) -> None:
+        self.duration = duration
         self.first_day = date.fromisoformat(
                 start_date[:4] + "-" + start_date[4:6] + "-" + start_date[6:]
                 )
@@ -77,8 +78,17 @@ class Iteration:
         self.build_goal = goals["build_goal"]
 
     def getStartToEndString(self) -> str:
+        """Return a string with the first and last date of the iteration"""
+        start_month = self.first_day.strftime("%B")
+        end_month = self.last_day.strftime("%B")
+        iteration_spans_multiple_months = start_month != end_month
         firstday_string = self.first_day.strftime("%B %-d")
-        lastday_string = self.last_day.strftime("%-d")
-        if self.first_day.strftime("%B") != self.last_day.strftime("%B"):
-            lastday_string = self.last_day.strftime("%B ") + lastday_string
+        if iteration_spans_multiple_months:
+            lastday_string = self.last_day.strftime("%B %-d")
+        else:
+            lastday_string = self.last_day.strftime("%-d")
         return firstday_string + " - " + lastday_string
+
+    def getDaterangeAsWeeks(self) -> list:
+        """Return a listcomp with the list of days split into weeks"""
+        return [self.days[i*7:i*7+7] for i in range(int(self.duration/7))]    

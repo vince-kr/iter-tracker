@@ -1,5 +1,5 @@
 import unittest
-from datetime import date
+from datetime import date, timedelta
 from agile import StudySession, Day, Iteration
 
 class TestStudySession(unittest.TestCase):
@@ -60,7 +60,15 @@ class TestIteration(unittest.TestCase):
         self.assertEqual(it.learning_goal, "Some pages")
         self.assertEqual(it.build_goal, "A cool app")
 
-    def testIterationExposesDayObjectPerDayOfDuration(self):
+    def testIterationExposesDayObjectsInsideWeeks(self):
         it = Iteration("20230304", 14, self.mock_goals)
         self.assertEqual(it.days[0], Day(date.fromisoformat("2023-03-04")))
         self.assertEqual(it.days[5], Day(date.fromisoformat("2023-03-09")))
+
+    def testIterationReturnsWeeksIterable(self):
+        first_day = date.fromisoformat("2023-03-04")
+        it = Iteration("20230304", 14, self.mock_goals)
+        self.assertEqual(it.getDaterangeAsWeeks(), [
+            [Day(first_day+timedelta(days=i)) for i in range(7)],
+            [Day(first_day+timedelta(days=7+i)) for i in range(7)]
+            ])
