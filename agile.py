@@ -58,11 +58,18 @@ class Day:
         return False
 
     def getSessionTotals(self) -> dict:
-        """Sum the total minutes spent on learning goal and build goal this day"""
+        """Sum the minutes spent on learning goal and build goal this day"""
         totals = { "build": 0, "learning": 0 }
         for session in self.study_sessions:
             totals[session.goal] += session.duration
         return totals
+
+    def getTotalSessionDuration(self) -> int:
+        """Sum the minutes spent working in total today"""
+        sum = 0
+        for session in self.study_sessions:
+            sum += session.duration
+        return sum
 
 
 class Iteration:
@@ -76,6 +83,7 @@ class Iteration:
         self.time_goal = goals["time_goal"]
         self.learning_goal = goals["learning_goal"]
         self.build_goal = goals["build_goal"]
+        self.counter = 3
 
     def getStartToEndString(self) -> str:
         """Return a string with the first and last date of the iteration"""
@@ -91,4 +99,29 @@ class Iteration:
 
     def getDaterangeAsWeeks(self) -> list:
         """Return a listcomp with the list of days split into weeks"""
-        return [self.days[i*7:i*7+7] for i in range(int(self.duration/7))]    
+        return [self.days[i*7:i*7+7] for i in range(int(self.duration/7))]
+
+    def getMinutesSpentLearning(self) -> int:
+        total = 0
+        for day in self.days:
+            both_goals = day.getSessionTotals()
+            total += both_goals["learning"]
+        return total
+
+    def getMinutesSpentBuilding(self) -> int:
+        total = 0
+        for day in self.days:
+            both_goals = day.getSessionTotals()
+            total += both_goals["build"]
+        return total
+
+
+
+class Agile:
+    def __init__(self) -> None:
+        self.goals = {
+                "time_goal":"4 hrs for learning goal; 6 hrs for build goal",
+                "learning_goal":"I will read ‘Fluent Python’ pages 3 - 95 (chapters 1 - 3) and from page 139 (chapter 5) as far as I can get in the time.",
+                "build_goal":"rewrite track-my-learning app as a Flask hosted app, write test-driven, and spend at least an HOUR defining requirements before writing a single line of test (let alone code)."
+                }
+        self.current_iteration = Iteration("20230304", 14, self.goals)

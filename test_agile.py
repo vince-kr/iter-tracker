@@ -17,7 +17,7 @@ class TestDay(unittest.TestCase):
         self.assertEqual(day.getDayOfWeek(), "Saturday")
         self.assertEqual(day.getDayAndMonth(), "4 Mar")
 
-    def testDayReturnsSumOfItsSessions(self):
+    def testDayReturnsTotalsPerSession(self):
         day = Day("")  # As long as I don't use the Day's date this can be anything
         day.generateSession("build", "12:40", "13:30")
         day.generateSession("build", "14:41", "15:16")
@@ -27,6 +27,7 @@ class TestDay(unittest.TestCase):
             "build":85,
             "learning":85
             })
+        self.assertEqual(day.getTotalSessionDuration(), 170)
 
     def testWhenAddingOverlappingStudySessions_DayRaisesAttrError(self):
         day = Day("")
