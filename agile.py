@@ -1,7 +1,7 @@
 from datetime import date, time, timedelta
 
 
-class StudySession:
+class _StudySession:
     def __init__(self, goal:str, start:str, end:str) -> None:
         """Instantiate a study session with goal, start time, and end time"""
         self.goal = goal
@@ -30,66 +30,31 @@ class StudySession:
 class Day:
     def __init__(self, date:object) -> None:
         self.date = date
-        self.study_sessions = []
+        self.day_of_week = self.date.strftime("%A")
+        self.day_and_month = self.date.strftime("%-d %b")
 
-    def __eq__(self, other) -> bool:
-        return self.date == other.date
-
-    def getDayOfWeek(self) -> str:
-        """Return full name of the weekday (e.g. 'Monday')"""
-        return self.date.strftime("%A")
-
-    def getDayAndMonth(self) -> str:
-        """Return day of the month and short month name (e.g. '4 Mar')"""
-        return self.date.strftime("%-d %b")
-
-    def generateSession(self, goal:str, start:str, end:str) -> None:
-        """Add a study session to the day's list of study sessions"""
-        ss = StudySession(goal, start, end)
-        if not self._newSessionOverlapsExisting(ss):
-            self.study_sessions.append(ss)
-        else:
-            raise AttributeError
-
-    def _newSessionOverlapsExisting(self, new_session):
-        for existing_session in self.study_sessions:
-            if existing_session.start < new_session.start < existing_session.end:
-                return True
-        return False
-
-    def getSessionTotals(self) -> dict:
-        """Sum the minutes spent on learning goal and build goal this day"""
-        totals = { "build": 0, "learning": 0 }
-        for session in self.study_sessions:
-            totals[session.goal] += session.duration
-        return totals
-
-    def getTotalSessionDuration(self) -> int:
-        """Sum the minutes spent working in total today"""
-        sum = 0
-        for session in self.study_sessions:
-            sum += session.duration
-        return sum
+    def __eq__(self, __o:object) -> bool:
+        return self.date == __o.date
 
 
 class Iteration:
-    def __init__(self, start_date:str, duration:int, goals:dict) -> None:
-        self.duration = duration
-        self.first_day = date.fromisoformat(
-                start_date[:4] + "-" + start_date[4:6] + "-" + start_date[6:]
-                )
-        self.days = [Day(self.first_day+timedelta(days=i)) for i in range(duration)]
+    def __init__(self, iteration_data:dict) -> None:
+        self.id = iteration_data
+        self.duration = self.id["duration"]
+        self.first_day = self.id["first_day"]
+        self.days = [Day(self.first_day+timedelta(days=i)) for i in range(self.duration)]
         self.last_day = self.days[-1].date
-        self.time_goal = goals["time_goal"]
-        self.learning_goal = goals["learning_goal"]
-        self.build_goal = goals["build_goal"]
-        self.counter = 3
+        self.weeks = [self.days[i*7:i*7+7] for i in range(int(self.duration/7))]
+        self.time_goal = self.id["time_goal"]
+        self.learning_goal = self.id["learning_goal"]
+        self.build_goal = self.id["build_goal"]
+        self.counter = self.id["counter"]
+        self.study_sessions = { day.date:[] for day in self.days }
 
     def getStartToEndString(self) -> str:
         """Return a string with the first and last date of the iteration"""
-        start_month = self.first_day.strftime("%B")
-        end_month = self.last_day.strftime("%B")
-        iteration_spans_multiple_months = start_month != end_month
+        iteration_spans_multiple_months = (
+                self.first_day.strftime("%B") != self.last_day.strftime("%B"))
         firstday_string = self.first_day.strftime("%B %-d")
         if iteration_spans_multiple_months:
             lastday_string = self.last_day.strftime("%B %-d")
@@ -97,23 +62,30 @@ class Iteration:
             lastday_string = self.last_day.strftime("%-d")
         return firstday_string + " - " + lastday_string
 
-    def getDaterangeAsWeeks(self) -> list:
-        """Return a listcomp with the list of days split into weeks"""
-        return [self.days[i*7:i*7+7] for i in range(int(self.duration/7))]
+    def getStudySessionsForDate(self, date:object) -> list:
+        return self.study_sessions[date]
 
-    def getMinutesSpentLearning(self) -> int:
-        total = 0
-        for day in self.days:
-            both_goals = day.getSessionTotals()
-            total += both_goals["learning"]
-        return total
+    def getSessionsTotals(self) -> dict:
+        """Sum the minutes spent on learning goal and build goal this day"""
+        totals = { "build": 0, "learning": 0 }
+        for day in self.study_sessions:
+            for sesh in self.study_sessions[day]:
+                totals[sesh.goal] += sesh.duration
+        return totals
 
-    def getMinutesSpentBuilding(self) -> int:
-        total = 0
-        for day in self.days:
-            both_goals = day.getSessionTotals()
-            total += both_goals["build"]
-        return total
+    def generateSession(self, date:object, goal:str, start:str, end:str) -> None:
+        """Add a study session to the list of study sessions"""
+        ss = _StudySession(goal, start, end)
+        if not self._newSessionOverlapsExisting(date, ss):
+            self.study_sessions[date].append(ss)
+        else:
+            raise AttributeError
+
+    def _newSessionOverlapsExisting(self, date:object, new_session:object) -> bool:
+        for existing_session in self.study_sessions[date]:
+            if existing_session.start < new_session.start < existing_session.end:
+                return True
+        return False
 
 
 

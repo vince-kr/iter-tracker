@@ -1,75 +1,66 @@
 import unittest
 from datetime import date, timedelta
-from agile import StudySession, Day, Iteration
-
-class TestStudySession(unittest.TestCase):
-
-    def testStudySessionReturnsGoalAndDuration(self):
-        ss = StudySession("build", "8:06", "9:18")
-        self.assertEqual(ss.goal, "build")
-        self.assertEqual(ss.duration, 72)
-
-
-class TestDay(unittest.TestCase):
-
-    def testDayReturnsTwoTypesOfDateString(self):
-        day = Day(date.fromisoformat("2023-03-04"))
-        self.assertEqual(day.getDayOfWeek(), "Saturday")
-        self.assertEqual(day.getDayAndMonth(), "4 Mar")
-
-    def testDayReturnsTotalsPerSession(self):
-        day = Day("")  # As long as I don't use the Day's date this can be anything
-        day.generateSession("build", "12:40", "13:30")
-        day.generateSession("build", "14:41", "15:16")
-        day.generateSession("learning", "20:12", "20:58")
-        day.generateSession("learning", "23:08", "23:47")
-        self.assertEqual(day.getSessionTotals(), {
-            "build":85,
-            "learning":85
-            })
-        self.assertEqual(day.getTotalSessionDuration(), 170)
-
-    def testWhenAddingOverlappingStudySessions_DayRaisesAttrError(self):
-        day = Day("")
-        day.generateSession("build", "21:10", "21:30")
-        with self.assertRaises(AttributeError):
-            day.generateSession("learning", "21:20", "21:50")
+from agile import Iteration
 
 
 class TestIteration(unittest.TestCase):
 
     def setUp(self):
-        self.mock_goals = {
+        # Define mock goals for instantiating Iteration objects
+        self.iter_data = {
+                "duration": 14,
+                "first_day": date.fromisoformat("2023-03-04"),
                 "time_goal": "No time",
                 "learning_goal": "No learning",
-                "build_goal": "No build"
+                "build_goal": "No build",
+                "counter": 3,
                 }
+        # Instantiate an iteration starting Saturday 4 March 2023 for 2 weeks
+        self.it = Iteration(self.iter_data)
+
+    def testCreateThenRecallStudySession(self):
+        self.it.generateSession(
+                date.fromisoformat("2023-03-04"), "learning", "20:00", "21:00")
+        sesh = self.it.getStudySessionsForDate(date.fromisoformat("2023-03-04"))[0]
+        self.assertEqual(sesh.duration, 60)
+        self.assertEqual(sesh.goal, "learning")
+
+    def testDayReturnsTwoTypesOfDateString(self):
+        self.assertEqual(self.it.days[0].day_of_week, "Saturday")
+        self.assertEqual(self.it.days[0].day_and_month, "4 Mar")
+
+    def testIterationReturnsTimeSpentOnGoals(self):
+        today = date.fromisoformat("2023-03-04")
+        self.it.generateSession(today, "build", "12:20", "12:50")
+        self.it.generateSession(today+timedelta(days=1), "build", "10:15", "10:45")
+        self.it.generateSession(today+timedelta(days=4), "learning", "6:40", "7:10")
+        self.it.generateSession(today+timedelta(days=10), "learning", "20:30", "21:00")
+        self.assertEqual(self.it.getSessionsTotals(), {
+            "build":60,
+            "learning":60
+            })
+
+    def testWhenAddingOverlappingStudySessions_DayRaisesAttrError(self):
+        self.it.generateSession(date.today(), "build", "21:10", "21:30")
+        with self.assertRaises(AttributeError):
+            self.it.generateSession(date.today(), "learning", "21:20", "21:50")
 
     def testIterationReturnsItsOwnDuration(self):
-        it = Iteration("20230218", 14, self.mock_goals)
+        self.iter_data["first_day"] = date.fromisoformat("2023-02-18")
+        it = Iteration(self.iter_data)
         self.assertEqual(it.getStartToEndString(), "February 18 - March 3")
-        it = Iteration("20230304", 14, self.mock_goals)
+        self.iter_data["first_day"] = date.fromisoformat("2023-03-04")
+        it = Iteration(self.iter_data)
         self.assertEqual(it.getStartToEndString(), "March 4 - 17")
 
-    def testIterationReturnsGoalsDict(self):
-        goals = {
-                "time_goal":"240 minutes learning / 360 minutes build",
-                "learning_goal": "Some pages",
-                "build_goal": "A cool app"
-                }
-        it = Iteration("20230304", 14, goals)
+    def testIterationReturnsGoals(self):
+        self.iter_data["time_goal"] = "240 minutes learning / 360 minutes build"
+        self.iter_data["learning_goal"] = "Some pages"
+        self.iter_data["build_goal"] = "A cool app"
+        it = Iteration(self.iter_data)
         self.assertEqual(it.learning_goal, "Some pages")
         self.assertEqual(it.build_goal, "A cool app")
 
-    def testIterationExposesDayObjectsInsideWeeks(self):
-        it = Iteration("20230304", 14, self.mock_goals)
-        self.assertEqual(it.days[0], Day(date.fromisoformat("2023-03-04")))
-        self.assertEqual(it.days[5], Day(date.fromisoformat("2023-03-09")))
-
-    def testIterationReturnsWeeksIterable(self):
-        first_day = date.fromisoformat("2023-03-04")
-        it = Iteration("20230304", 14, self.mock_goals)
-        self.assertEqual(it.getDaterangeAsWeeks(), [
-            [Day(first_day+timedelta(days=i)) for i in range(7)],
-            [Day(first_day+timedelta(days=7+i)) for i in range(7)]
-            ])
+    def testIterationReturnsWeeksizedSlicesOfDaysList(self):
+        self.assertTrue(len(self.it.weeks) == 2)
+        self.assertTrue(len(self.it.weeks[0]) == 7)
