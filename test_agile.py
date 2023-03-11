@@ -48,10 +48,10 @@ class TestIteration(unittest.TestCase):
     def testIterationReturnsItsOwnDuration(self):
         self.iter_data["first_day"] = date.fromisoformat("2023-02-18")
         it = Iteration(self.iter_data)
-        self.assertEqual(it.getStartToEndString(), "February 18 - March 3")
+        self.assertEqual(it.start_to_end, "February 18 - March 3")
         self.iter_data["first_day"] = date.fromisoformat("2023-03-04")
         it = Iteration(self.iter_data)
-        self.assertEqual(it.getStartToEndString(), "March 4 - 17")
+        self.assertEqual(it.start_to_end, "March 4 - 17")
 
     def testIterationReturnsGoals(self):
         self.iter_data["time_goal"] = "240 minutes learning / 360 minutes build"

@@ -27,31 +27,40 @@ class _StudySession:
         return (int(time[:2]), int(time[3:]))
 
 
-class Day:
+class _Day:
     def __init__(self, date:object) -> None:
         self.date = date
         self.day_of_week = self.date.strftime("%A")
         self.day_and_month = self.date.strftime("%-d %b")
 
-    def __eq__(self, __o:object) -> bool:
-        return self.date == __o.date
+    def __eq__(self, _o:object) -> bool:
+        return self.date == _o.date
 
 
 class Iteration:
     def __init__(self, iteration_data:dict) -> None:
-        self.id = iteration_data
-        self.duration = self.id["duration"]
-        self.first_day = self.id["first_day"]
-        self.days = [Day(self.first_day+timedelta(days=i)) for i in range(self.duration)]
+        id = iteration_data
+        self.duration = id["duration"]
+        self.first_day = id["first_day"]
+        self.days = self._getListOfDays()
         self.last_day = self.days[-1].date
         self.weeks = [self.days[i*7:i*7+7] for i in range(int(self.duration/7))]
-        self.time_goal = self.id["time_goal"]
-        self.learning_goal = self.id["learning_goal"]
-        self.build_goal = self.id["build_goal"]
-        self.counter = self.id["counter"]
+        self.start_to_end = self._generateStartToEndString()
+        self.time_goal = id["time_goal"]
+        self.learning_goal = id["learning_goal"]
+        self.build_goal = id["build_goal"]
+        self.counter = id["counter"]
         self.study_sessions = { day.date:[] for day in self.days }
 
-    def getStartToEndString(self) -> str:
+    def _getListOfDays(self) -> list:
+        """Return a list of Day objects for each day of the iteration"""
+        list_of_days = []
+        for i in range(self.duration):
+            daily_date = self.first_day + timedelta(days = i)
+            list_of_days.append(_Day(daily_date))
+        return list_of_days
+
+    def _generateStartToEndString(self) -> str:
         """Return a string with the first and last date of the iteration"""
         iteration_spans_multiple_months = (
                 self.first_day.strftime("%B") != self.last_day.strftime("%B"))
@@ -61,17 +70,6 @@ class Iteration:
         else:
             lastday_string = self.last_day.strftime("%-d")
         return firstday_string + " - " + lastday_string
-
-    def getStudySessionsForDate(self, date:object) -> list:
-        return self.study_sessions[date]
-
-    def getSessionsTotals(self) -> dict:
-        """Sum the minutes spent on learning goal and build goal this day"""
-        totals = { "build": 0, "learning": 0 }
-        for day in self.study_sessions:
-            for sesh in self.study_sessions[day]:
-                totals[sesh.goal] += sesh.duration
-        return totals
 
     def generateSession(self, date:object, goal:str, start:str, end:str) -> None:
         """Add a study session to the list of study sessions"""
@@ -87,13 +85,28 @@ class Iteration:
                 return True
         return False
 
+    def getStudySessionsForDate(self, date:object) -> list:
+        """Return all study session objects for a given date"""
+        return self.study_sessions[date]
+
+    def getSessionsTotals(self) -> dict:
+        """Sum the minutes spent on learning goal and build goal this day"""
+        totals = { "build": 0, "learning": 0 }
+        for day in self.study_sessions:
+            for sesh in self.study_sessions[day]:
+                totals[sesh.goal] += sesh.duration
+        return totals
 
 
 class Agile:
     def __init__(self) -> None:
-        self.goals = {
-                "time_goal":"4 hrs for learning goal; 6 hrs for build goal",
-                "learning_goal":"I will read ‘Fluent Python’ pages 3 - 95 (chapters 1 - 3) and from page 139 (chapter 5) as far as I can get in the time.",
-                "build_goal":"rewrite track-my-learning app as a Flask hosted app, write test-driven, and spend at least an HOUR defining requirements before writing a single line of test (let alone code)."
+        iteration_data = {
+                "duration": 14,
+                "first_day": date.fromisoformat("2023-03-04"),
+                "time_goal": "No time",
+                "learning_goal": "No learning",
+                "build_goal": "No build",
+                "counter": 3,
                 }
-        self.current_iteration = Iteration("20230304", 14, self.goals)
+        self.all_iterations = [ Iteration(iteration_data) ]
+        self.current_iteration = self.all_iterations[0]
