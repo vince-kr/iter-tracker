@@ -1,0 +1,73 @@
+:root {
+  --background: #240b00;
+  --alternate: #246000;
+  --foreground: #ffffcc;
+}
+
+html {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  width: 75vw;
+  margin: 0 auto;
+}
+
+body h {
+  font-family: georgia, serif;
+}
+
+body p {
+  font-family: verdana, sans-serif;
+  font-size: 13pt;
+}
+
+#left, #right {
+  float: left;
+}
+
+#left {
+  width: 66%;
+  margin-right: 2%;
+}
+
+#right {
+  width: 32%;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
+  font-family: verdana, sans-serif;
+  font-size: 13pt;
+}
+
+th, td {
+  border: 2px solid var(--alternate);
+  padding: 8px;
+  vertical-align: top;
+}
+
+tr:nth-child(even) {
+  height: 100px;
+}
+
+form {
+  width: 100%;
+}
+
+form label {
+  font-family: verdana, sans-serif;
+  font-size: 13pt;
+}
+
+form .form-el {
+  width: 20%;
+  height: 120px;
+  margin: 0;
+  float: left;
+}

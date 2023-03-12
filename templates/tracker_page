@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Track my learning</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="" />
+  <link rel="stylesheet" type="text/css"
+    href="{{url_for("static",filename="style.css")}}" />
+</head>
+
+<body>
+  <h1>Iteration:&emsp;{{ iteration.counter }}</h1>
+  <h3>{{ iteration.start_to_end }}</h3>
+  <hr>
+
+  <div id="left">
+    <h2>Time spent this iteration</h2>
+    <table>
+      {% for week in iteration.weeks %}
+      <tr>
+        {% for day in week %}
+        <th>
+          {{ day.day_of_week }}<br />{{ day.day_and_month }}
+        </th>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for day in week %}
+        <td></td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+    <p>Worked this iteration:<br />
+    Learning: {{ iteration.getSessionsTotals()["learning"] }} minutes<br />
+    Build: {{ iteration.getSessionsTotals()["build"] }} minutes<br />
+    Goal: {{ iteration.time_goal }}</p>
+    <form method="post">
+      <div class="form-el">
+        <label for="date">Session date:</label><br />
+        <input type="date" id="session_date" name="session_date"
+          value="{{iteration.todays_date.strftime("%Y-%m-%d")}}">
+      </div>
+      <div class="form-el">
+        <label for="goal_type">Goal:</label><br />
+        <input type="radio" id="learning" name="goal_type" value="learning">
+        <label for="learning">Learning</label><br />
+        <input type="radio" id="build" name="goal_type" value="build">
+        <label for="build">Build</label>
+      </div>
+      <div class="form-el">
+        <label for="start_time">Start time:</label><br />
+        <input type="time" id="start_time" name="start_time">
+      </div>
+      <div class="form-el">
+        <label for="end_time">End time:</label><br />
+        <input type="time" id="end_time" name="end_time">
+      </div>
+      <div class="form-el">
+        <br /><input type="submit" value="Submit">
+      </div>
+    </form>
+  </div>
+
+  <div id="right">
+    <h2>Learning goal</h2>
+    <p>{{ iteration.learning_goal }}</p>
+    <h2>Build goal</h2>
+    <p>{{ iteration.build_goal }}</p>
+  </div>
+</body>
+
+</html>
