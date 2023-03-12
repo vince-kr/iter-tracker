@@ -60,9 +60,10 @@ form {
   width: 100%;
 }
 
-form label {
+form * {
   font-family: verdana, sans-serif;
   font-size: 13pt;
+  line-height:150%;
 }
 
 form .form-el {

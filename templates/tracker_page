@@ -28,7 +28,11 @@
       </tr>
       <tr>
         {% for day in week %}
-        <td></td>
+        <td>
+          {% for sesh in iteration.study_sessions[day.date] %}
+          {{ sesh.start.strftime("%H:%M") }} - {{ sesh.end.strftime("%H:%M")}}<br />
+          {% endfor %}
+        </td>
         {% endfor %}
       </tr>
       {% endfor %}
