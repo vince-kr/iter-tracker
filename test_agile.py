@@ -25,22 +25,26 @@ class TestIteration(unittest.TestCase):
         self.assertEqual(sesh.duration, 60)
         self.assertEqual(sesh.goal, "learning")
 
+    def testIterationReturnsWeeksizedSlicesOfDaysList(self):
+        self.assertTrue(len(self.it.weeks) == 2)
+        self.assertTrue(len(self.it.weeks[0]) == 7)
+
     def testDayReturnsTwoTypesOfDateString(self):
-        self.assertEqual(self.it.days[0].day_of_week, "Saturday")
-        self.assertEqual(self.it.days[0].day_and_month, "4 Mar")
+        self.assertEqual(self.it.weeks[0][0].day_of_week, "Saturday")
+        self.assertEqual(self.it.weeks[0][0].day_and_month, "4 Mar")
 
     def testIterationReturnsTimeSpentOnGoals(self):
         today = date.fromisoformat("2023-03-04")
         self.it.generateSession(today, "build", "12:20", "12:50")
         self.it.generateSession(today+timedelta(days=1), "build", "10:15", "10:45")
-        self.it.generateSession(today+timedelta(days=4), "learning", "6:40", "7:10")
+        self.it.generateSession(today+timedelta(days=4), "learning", "06:40", "07:10")
         self.it.generateSession(today+timedelta(days=10), "learning", "20:30", "21:00")
         self.assertEqual(self.it.getSessionsTotals(), {
             "build":60,
             "learning":60
             })
 
-    def testWhenAddingOverlappingStudySessions_DayRaisesAttrError(self):
+    def testWhenAddingOverlappingStudySessions_RaisesAttrError(self):
         self.it.generateSession(date.today(), "build", "21:10", "21:30")
         with self.assertRaises(AttributeError):
             self.it.generateSession(date.today(), "learning", "21:20", "21:50")
@@ -60,7 +64,3 @@ class TestIteration(unittest.TestCase):
         it = Iteration(self.iter_data)
         self.assertEqual(it.learning_goal, "Some pages")
         self.assertEqual(it.build_goal, "A cool app")
-
-    def testIterationReturnsWeeksizedSlicesOfDaysList(self):
-        self.assertTrue(len(self.it.weeks) == 2)
-        self.assertTrue(len(self.it.weeks[0]) == 7)

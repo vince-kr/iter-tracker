@@ -5,14 +5,9 @@ class _StudySession:
     def __init__(self, goal:str, start:str, end:str) -> None:
         """Instantiate a study session with goal, start time, and end time"""
         self.goal = goal
-        self.start = time.fromisoformat(self._formatIsoString(start))
-        self.end = time.fromisoformat(self._formatIsoString(end))
+        self.start = time.fromisoformat(start + ":00")
+        self.end = time.fromisoformat(end + ":00")
         self.duration = self._calculateDuration(start, end)
-
-    def _formatIsoString(self, time:str) -> str:
-        if len(time) == 4:
-            time = "0" + time
-        return time + ":00"
 
     def _calculateDuration(self, starttime:str, endtime:str) -> int:
         """Helper method to convert string start and end times into minutes"""
@@ -22,8 +17,6 @@ class _StudySession:
 
     def _formatTimeString(self, time:str) -> tuple:
         """Helper method to return tuple of ints (hrs,mins) for a string time"""
-        if len(time) == 4:  # in case of missing leading 0 for hours between 0 and 10
-            time = "0" + time
         return (int(time[:2]), int(time[3:]))
 
 
@@ -40,35 +33,35 @@ class _Day:
 class Iteration:
     def __init__(self, iteration_data:dict) -> None:
         id = iteration_data
-        self.duration = id["duration"]
-        self.first_day = id["first_day"]
-        self.days = self._getListOfDays()
-        self.last_day = self.days[-1].date
-        self.weeks = [self.days[i*7:i*7+7] for i in range(int(self.duration/7))]
+        self._duration = id["duration"]
+        self._first_day = id["first_day"]
+        self._days = self._getListOfDays()
+        self._last_day = self._days[-1].date
+        self.weeks = [self._days[i*7:i*7+7] for i in range(int(self._duration/7))]
         self.start_to_end = self._generateStartToEndString()
         self.time_goal = id["time_goal"]
         self.learning_goal = id["learning_goal"]
         self.build_goal = id["build_goal"]
         self.counter = id["counter"]
-        self.study_sessions = { day.date:[] for day in self.days }
+        self.study_sessions = { day.date:[] for day in self._days }
 
     def _getListOfDays(self) -> list:
         """Return a list of Day objects for each day of the iteration"""
         list_of_days = []
-        for i in range(self.duration):
-            daily_date = self.first_day + timedelta(days = i)
+        for i in range(self._duration):
+            daily_date = self._first_day + timedelta(days = i)
             list_of_days.append(_Day(daily_date))
         return list_of_days
 
     def _generateStartToEndString(self) -> str:
         """Return a string with the first and last date of the iteration"""
         iteration_spans_multiple_months = (
-                self.first_day.strftime("%B") != self.last_day.strftime("%B"))
-        firstday_string = self.first_day.strftime("%B %-d")
+                self._first_day.strftime("%B") != self._last_day.strftime("%B"))
+        firstday_string = self._first_day.strftime("%B %-d")
         if iteration_spans_multiple_months:
-            lastday_string = self.last_day.strftime("%B %-d")
+            lastday_string = self._last_day.strftime("%B %-d")
         else:
-            lastday_string = self.last_day.strftime("%-d")
+            lastday_string = self._last_day.strftime("%-d")
         return firstday_string + " - " + lastday_string
 
     def generateSession(self, date:object, goal:str, start:str, end:str) -> None:
