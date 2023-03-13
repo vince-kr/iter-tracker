@@ -64,3 +64,7 @@ class TestIteration(unittest.TestCase):
         it = Iteration(self.iter_data)
         self.assertEqual(it.learning_goal, "Some pages")
         self.assertEqual(it.build_goal, "A cool app")
+
+
+class TestAgile(unittest.TestCase):
+    pass

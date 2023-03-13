@@ -1,4 +1,5 @@
 from datetime import date, time, timedelta
+import json
 
 
 class _StudySession:
@@ -39,9 +40,9 @@ class Iteration:
         self._last_day = self._days[-1].date
         self.weeks = [self._days[i*7:i*7+7] for i in range(int(self._duration/7))]
         self.start_to_end = self._generateStartToEndString()
-        self.time_goal = id["time_goal"]
-        self.learning_goal = id["learning_goal"]
-        self.build_goal = id["build_goal"]
+        self.time_goal = id["goals"]["time_goal"]
+        self.learning_goal = id["goals"]["learning_goal"]
+        self.build_goal = id["goals"]["build_goal"]
         self.counter = id["counter"]
         self.study_sessions = { day.date:[] for day in self._days }
 
@@ -93,13 +94,9 @@ class Iteration:
 
 class Agile:
     def __init__(self) -> None:
-        iteration_data = {
-                "duration": 14,
-                "first_day": date.fromisoformat("2023-03-04"),
-                "time_goal": "No time",
-                "learning_goal": "No learning",
-                "build_goal": "No build",
-                "counter": 3,
-                }
-        self.all_iterations = [ Iteration(iteration_data) ]
-        self.current_iteration = self.all_iterations[0]
+        with open("./persistence/live.json") as id:
+            iteration_data = json.load(id)
+        iteration_data["first_day"] = date.fromisoformat(iteration_data["start"])
+        with open("./persistence/count") as c:
+            iteration_data["counter"] = c.read()
+        self.current_iteration = Iteration(iteration_data)
