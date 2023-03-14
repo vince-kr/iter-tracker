@@ -38,8 +38,8 @@
       {% endfor %}
     </table>
     <p>Worked this iteration:<br />
-    Learning: {{ iteration.getSessionsTotals()["learning"] }} minutes<br />
-    Build: {{ iteration.getSessionsTotals()["build"] }} minutes<br />
+    Learning: {{ iteration.get_sessions_totals()["learning"] }} minutes<br />
+    Build: {{ iteration.get_sessions_totals()["build"] }} minutes<br />
     Goal: {{ iteration.time_goal }}</p>
     <form method="post">
       <div class="form-el">

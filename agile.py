@@ -3,89 +3,90 @@ import json
 
 
 class _StudySession:
-    def __init__(self, goal:str, start:str, end:str) -> None:
+    def __init__(self, goal: str, start: str, end: str) -> None:
         """Instantiate a study session with goal, start time, and end time"""
         self.goal = goal
         self.start = time.fromisoformat(start + ":00")
         self.end = time.fromisoformat(end + ":00")
-        self.duration = self._calculateDuration(start, end)
+        self.duration = self._calculate_duration(start, end)
 
-    def _calculateDuration(self, starttime:str, endtime:str) -> int:
+    def _calculate_duration(self, start_time: str, end_time: str) -> int:
         """Helper method to convert string start and end times into minutes"""
-        start_hr, start_min = self._formatTimeString(starttime)
-        end_hr, end_min = self._formatTimeString(endtime)
+        start_hr, start_min = self._format_time_string(start_time)
+        end_hr, end_min = self._format_time_string(end_time)
         return (end_hr - start_hr) * 60 + end_min - start_min
 
-    def _formatTimeString(self, time:str) -> tuple:
+    @staticmethod
+    def _format_time_string(hrs_mins: str) -> tuple:
         """Helper method to return tuple of ints (hrs,mins) for a string time"""
-        return (int(time[:2]), int(time[3:]))
+        return int(hrs_mins[:2]), int(hrs_mins[3:])
 
 
 class _Day:
-    def __init__(self, date:object) -> None:
-        self.date = date
+    def __init__(self, days_date: object) -> None:
+        self.date = days_date
         self.day_of_week = self.date.strftime("%A")
         self.day_and_month = self.date.strftime("%-d %b")
 
-    def __eq__(self, _o:object) -> bool:
+    def __eq__(self, _o: object) -> bool:
         return self.date == _o.date
 
 
 class Iteration:
-    def __init__(self, iteration_data:dict) -> None:
-        id = iteration_data
-        self._duration = id["duration"]
-        self._first_day = id["first_day"]
-        self._days = self._getListOfDays()
+    def __init__(self, iteration_data: dict) -> None:
+        it_da = iteration_data
+        self._duration = it_da["duration"]
+        self._first_day = it_da["first_day"]
+        self._days = self._get_list_of_days()
         self._last_day = self._days[-1].date
-        self.weeks = [self._days[i*7:i*7+7] for i in range(int(self._duration/7))]
-        self.start_to_end = self._generateStartToEndString()
-        self.time_goal = id["goals"]["time_goal"]
-        self.learning_goal = id["goals"]["learning_goal"]
-        self.build_goal = id["goals"]["build_goal"]
-        self.counter = id["counter"]
-        self.study_sessions = { day.date:[] for day in self._days }
+        self.weeks = [self._days[i * 7:i * 7 + 7] for i in range(int(self._duration / 7))]
+        self.start_to_end = self._generate_start_end_string()
+        self.time_goal = it_da["goals"]["time_goal"]
+        self.learning_goal = it_da["goals"]["learning_goal"]
+        self.build_goal = it_da["goals"]["build_goal"]
+        self.counter = it_da["counter"]
+        self.study_sessions = {day.date: [] for day in self._days}
 
-    def _getListOfDays(self) -> list:
+    def _get_list_of_days(self) -> list:
         """Return a list of Day objects for each day of the iteration"""
         list_of_days = []
         for i in range(self._duration):
-            daily_date = self._first_day + timedelta(days = i)
+            daily_date = self._first_day + timedelta(days=i)
             list_of_days.append(_Day(daily_date))
         return list_of_days
 
-    def _generateStartToEndString(self) -> str:
+    def _generate_start_end_string(self) -> str:
         """Return a string with the first and last date of the iteration"""
         iteration_spans_multiple_months = (
                 self._first_day.strftime("%B") != self._last_day.strftime("%B"))
-        firstday_string = self._first_day.strftime("%B %-d")
+        first_day_string = self._first_day.strftime("%B %-d")
         if iteration_spans_multiple_months:
-            lastday_string = self._last_day.strftime("%B %-d")
+            last_day_string = self._last_day.strftime("%B %-d")
         else:
-            lastday_string = self._last_day.strftime("%-d")
-        return firstday_string + " - " + lastday_string
+            last_day_string = self._last_day.strftime("%-d")
+        return first_day_string + " - " + last_day_string
 
-    def generateSession(self, date:object, goal:str, start:str, end:str) -> None:
+    def generate_session(self, days_date: object, goal: str, start: str, end: str) -> None:
         """Add a study session to the list of study sessions"""
         ss = _StudySession(goal, start, end)
-        if not self._newSessionOverlapsExisting(date, ss):
-            self.study_sessions[date].append(ss)
+        if not self._new_session_overlaps_existing(days_date, ss):
+            self.study_sessions[days_date].append(ss)
         else:
             raise AttributeError
 
-    def _newSessionOverlapsExisting(self, date:object, new_session:object) -> bool:
-        for existing_session in self.study_sessions[date]:
+    def _new_session_overlaps_existing(self, days_date: object, new_session: object) -> bool:
+        for existing_session in self.study_sessions[days_date]:
             if existing_session.start < new_session.start < existing_session.end:
                 return True
         return False
 
-    def getStudySessionsForDate(self, date:object) -> list:
+    def get_study_sessions_for_date(self, days_date: object) -> list:
         """Return all study session objects for a given date"""
-        return self.study_sessions[date]
+        return self.study_sessions[days_date]
 
-    def getSessionsTotals(self) -> dict:
+    def get_sessions_totals(self) -> dict:
         """Sum the minutes spent on learning goal and build goal this day"""
-        totals = { "build": 0, "learning": 0 }
+        totals = {"build": 0, "learning": 0}
         for day in self.study_sessions:
             for sesh in self.study_sessions[day]:
                 totals[sesh.goal] += sesh.duration
@@ -94,8 +95,8 @@ class Iteration:
 
 class Agile:
     def __init__(self) -> None:
-        with open("./persistence/live.json") as id:
-            iteration_data = json.load(id)
+        with open("./persistence/live.json") as iteration_data:
+            iteration_data = json.load(iteration_data)
         iteration_data["first_day"] = date.fromisoformat(iteration_data["start"])
         with open("./persistence/count") as c:
             iteration_data["counter"] = c.read()
