@@ -1,7 +1,7 @@
 :root {
   --background: #240b00;
   --alternate: #246000;
-  --foreground: #ffffcc;
+  --foreground: #ffc;
 }
 
 html {
@@ -43,7 +43,7 @@ table {
   width: 100%;
   table-layout: fixed;
   font-family: verdana, sans-serif;
-  font-size: 13pt;
+  font-size: 12pt;
 }
 
 th, td {

@@ -7,15 +7,15 @@ class TestIteration(unittest.TestCase):
 
     def setUp(self):
         self.iter_data = {
-                "duration": 14,
-                "first_day": date.fromisoformat("2023-03-04"),
-                "goals": {
-                    "time_goal": "No time",
-                    "learning_goal": "No learning",
-                    "build_goal": "No build",
-                },
-                "counter": 3,
-                }
+            "duration": 14,
+            "first_day": date.fromisoformat("2023-03-04"),
+            "goals": {
+                "time_goal": "No time",
+                "learning_goal": "No learning",
+                "build_goal": "No build",
+            },
+            "counter": 3,
+            }
         # Instantiate an iteration starting Saturday 4 March 2023 for 2 weeks
         self.it = Iteration(self.iter_data)
 
@@ -65,6 +65,42 @@ class TestIteration(unittest.TestCase):
         it = Iteration(self.iter_data)
         self.assertEqual(it.learning_goal, "Some pages")
         self.assertEqual(it.build_goal, "A cool app")
+
+    def testIterationReturnsDictForPersistence(self):
+        self.iter_data["duration"] = 7
+        it = Iteration(self.iter_data)
+        it.generate_session(date.fromisoformat("2023-03-04"), "build", "20:30", "21:30")
+        it.generate_session(date.fromisoformat("2023-03-06"), "learning", "14:00", "14:40")
+        self.assertEqual(it.get_persistence_data(), {
+            "start": "2023-03-04",
+            "duration": 7,
+            "goals": {
+                "time_goal": "No time",
+                "learning_goal": "No learning",
+                "build_goal": "No build"
+            },
+            "study_sessions": {
+                "2023-03-04": [
+                    {
+                        "goal": "build",
+                        "start": "20:30",
+                        "end": "21:30"
+                    }
+                ],
+                "2023-03-05": [],
+                "2023-03-06": [
+                    {
+                        "goal": "learning",
+                        "start": "14:00",
+                        "end": "14:40"
+                    }
+                ],
+                "2023-03-07": [],
+                "2023-03-08": [],
+                "2023-03-09": [],
+                "2023-03-10": []
+            }
+        })
 
 
 class TestAgile(unittest.TestCase):

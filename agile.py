@@ -39,20 +39,36 @@ class Iteration:
         self._first_day = it_da["first_day"]
         self._days = self._get_list_of_days()
         self._last_day = self._days[-1].date
+        self._goals = it_da["goals"]
         self.weeks = [self._days[i * 7:i * 7 + 7] for i in range(int(self._duration / 7))]
         self.start_to_end = self._generate_start_end_string()
-        self.time_goal = it_da["goals"]["time_goal"]
-        self.learning_goal = it_da["goals"]["learning_goal"]
-        self.build_goal = it_da["goals"]["build_goal"]
+        self.time_goal = self._goals["time_goal"]
+        self.learning_goal = self._goals["learning_goal"]
+        self.build_goal = self._goals["build_goal"]
         self.counter = it_da["counter"]
-        self.study_sessions = {day.date: [] for day in self._days}
+        if "study_sessions" in it_da:
+            self.study_sessions = self._generate_study_sessions_from_persistence(
+                it_da["study_sessions"])
+        else:
+            self.study_sessions = {day.date: [] for day in self._days}
+
+    @staticmethod
+    def _generate_study_sessions_from_persistence(sessions_per_day: dict) -> dict:
+        study_sessions = {}
+        for day in sessions_per_day:
+            study_sessions[date.fromisoformat(day)] = []
+            for session in sessions_per_day[day]:
+                study_sessions[date.fromisoformat(day)].append(
+                    _StudySession(session["goal"], session["start"], session["end"])
+                )
+        return study_sessions
 
     def _get_list_of_days(self) -> list:
         """Return a list of Day objects for each day of the iteration"""
         list_of_days = []
         for i in range(self._duration):
-            daily_date = self._first_day + timedelta(days=i)
-            list_of_days.append(_Day(daily_date))
+            days_date = self._first_day + timedelta(days=i)
+            list_of_days.append(_Day(days_date))
         return list_of_days
 
     def _generate_start_end_string(self) -> str:
@@ -71,12 +87,14 @@ class Iteration:
         ss = _StudySession(goal, start, end)
         if not self._new_session_overlaps_existing(days_date, ss):
             self.study_sessions[days_date].append(ss)
+            with open("./persistence/live.json", "w") as iteration_data:
+                json.dump(self.get_persistence_data(), iteration_data, indent=2)
         else:
             raise AttributeError
 
     def _new_session_overlaps_existing(self, days_date: object, new_session: object) -> bool:
         for existing_session in self.study_sessions[days_date]:
-            if existing_session.start < new_session.start < existing_session.end:
+            if existing_session.start <= new_session.start <= existing_session.end:
                 return True
         return False
 
@@ -92,11 +110,34 @@ class Iteration:
                 totals[sesh.goal] += sesh.duration
         return totals
 
+    def get_persistence_data(self) -> dict:
+        return {
+            "start": self._first_day.strftime("%Y-%m-%d"),
+            "duration": self._duration,
+            "goals": self._goals,
+            "study_sessions": self._get_study_sessions_dict()
+        }
+
+    def _get_study_sessions_dict(self) -> dict:
+        study_sessions_dict = {}
+        for day in self.study_sessions:
+            study_sessions_dict[day.strftime("%Y-%m-%d")] = []
+            for session in self.study_sessions[day]:
+                study_sessions_dict[day.strftime("%Y-%m-%d")].append(
+                    {
+                        "goal": session.goal,
+                        "start": session.start.strftime("%H:%M"),
+                        "end": session.end.strftime("%H:%M")
+                    }
+                )
+        return study_sessions_dict
+
 
 class Agile:
     def __init__(self) -> None:
         with open("./persistence/live.json") as iteration_data:
             iteration_data = json.load(iteration_data)
+        print(iteration_data)
         iteration_data["first_day"] = date.fromisoformat(iteration_data["start"])
         with open("./persistence/count") as c:
             iteration_data["counter"] = c.read()
