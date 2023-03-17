@@ -46,9 +46,10 @@ class Iteration:
         self.learning_goal = self._goals["learning_goal"]
         self.build_goal = self._goals["build_goal"]
         self.counter = it_da["counter"]
+        self.testing = "testing" in it_da and it_da["testing"]
         if "study_sessions" in it_da:
             self.study_sessions = self._generate_study_sessions_from_persistence(
-                it_da["study_sessions"])
+                                    it_da["study_sessions"])
         else:
             self.study_sessions = {day.date: [] for day in self._days}
 
@@ -87,8 +88,9 @@ class Iteration:
         ss = _StudySession(goal, start, end)
         if not self._new_session_overlaps_existing(days_date, ss):
             self.study_sessions[days_date].append(ss)
-            with open("./persistence/live.json", "w") as iteration_data:
-                json.dump(self.get_persistence_data(), iteration_data, indent=2)
+            if not self.testing:
+                with open("./persistence/live.json", "w") as iteration_data:
+                    json.dump(self.get_persistence_data(), iteration_data, indent=2)
         else:
             raise AttributeError
 
@@ -137,7 +139,6 @@ class Agile:
     def __init__(self) -> None:
         with open("./persistence/live.json") as iteration_data:
             iteration_data = json.load(iteration_data)
-        print(iteration_data)
         iteration_data["first_day"] = date.fromisoformat(iteration_data["start"])
         with open("./persistence/count") as c:
             iteration_data["counter"] = c.read()

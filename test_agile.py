@@ -15,6 +15,7 @@ class TestIteration(unittest.TestCase):
                 "build_goal": "No build",
             },
             "counter": 3,
+            "testing": True
             }
         # Instantiate an iteration starting Saturday 4 March 2023 for 2 weeks
         self.it = Iteration(self.iter_data)
