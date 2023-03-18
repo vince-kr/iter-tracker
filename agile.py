@@ -1,25 +1,5 @@
-from datetime import date, time, timedelta
+from datetime import date, timedelta
 import json
-
-
-class _StudySession:
-    def __init__(self, goal: str, start: str, end: str) -> None:
-        """Instantiate a study session with goal, start time, and end time"""
-        self.goal = goal
-        self.start = time.fromisoformat(start + ":00")
-        self.end = time.fromisoformat(end + ":00")
-        self.duration = self._calculate_duration(start, end)
-
-    def _calculate_duration(self, start_time: str, end_time: str) -> int:
-        """Helper method to convert string start and end times into minutes"""
-        start_hr, start_min = self._format_time_string(start_time)
-        end_hr, end_min = self._format_time_string(end_time)
-        return (end_hr - start_hr) * 60 + end_min - start_min
-
-    @staticmethod
-    def _format_time_string(hrs_mins: str) -> tuple:
-        """Helper method to return tuple of ints (hrs,mins) for a string time"""
-        return int(hrs_mins[:2]), int(hrs_mins[3:])
 
 
 class _Day:
@@ -35,44 +15,26 @@ class _Day:
 class Iteration:
     def __init__(self, iteration_data: dict) -> None:
         it_da = iteration_data
-        self._duration = it_da["duration"]
+        self._length_in_days = it_da["duration"]
+        self._length_in_weeks = self._length_in_days // 7
         self._first_day = it_da["first_day"]
         self._days = self._get_list_of_days()
-        self._last_day = self._days[-1].date
+        self._last_day = self._days[-1]["date"]
         self._goals = it_da["goals"]
-        self.weeks = [self._days[i * 7:i * 7 + 7] for i in range(int(self._duration / 7))]
-        self.start_to_end = self._generate_start_end_string()
         self.time_goal = self._goals["time_goal"]
         self.learning_goal = self._goals["learning_goal"]
         self.build_goal = self._goals["build_goal"]
-        self.counter = it_da["counter"]
+        self._counter = it_da["counter"]
         self.testing = "testing" in it_da and it_da["testing"]
-        if "study_sessions" in it_da:
-            self.study_sessions = self._generate_study_sessions_from_persistence(
-                                    it_da["study_sessions"])
-        else:
-            self.study_sessions = {day.date: [] for day in self._days}
+        self._study_sessions = {day["date"]: [] for day in self._days}
 
-    @staticmethod
-    def _generate_study_sessions_from_persistence(sessions_per_day: dict) -> dict:
-        study_sessions = {}
-        for day in sessions_per_day:
-            study_sessions[date.fromisoformat(day)] = []
-            for session in sessions_per_day[day]:
-                study_sessions[date.fromisoformat(day)].append(
-                    _StudySession(session["goal"], session["start"], session["end"])
-                )
-        return study_sessions
+    @property
+    def counter(self) -> int:
+        """Return the position of the iteration in the list of all iterations"""
+        return self._counter
 
-    def _get_list_of_days(self) -> list:
-        """Return a list of Day objects for each day of the iteration"""
-        list_of_days = []
-        for i in range(self._duration):
-            days_date = self._first_day + timedelta(days=i)
-            list_of_days.append(_Day(days_date))
-        return list_of_days
-
-    def _generate_start_end_string(self) -> str:
+    @property
+    def start_to_end(self) -> str:
         """Return a string with the first and last date of the iteration"""
         iteration_spans_multiple_months = (
                 self._first_day.strftime("%B") != self._last_day.strftime("%B"))
@@ -83,16 +45,53 @@ class Iteration:
             last_day_string = self._last_day.strftime("%-d")
         return first_day_string + " - " + last_day_string
 
-    def generate_session(self, days_date: object, goal: str, start: str, end: str) -> None:
-        """Add a study session to the list of study sessions"""
-        ss = _StudySession(goal, start, end)
-        if not self._new_session_overlaps_existing(days_date, ss):
-            self.study_sessions[days_date].append(ss)
-            if not self.testing:
-                with open("./persistence/live.json", "w") as iteration_data:
-                    json.dump(self.get_persistence_data(), iteration_data, indent=2)
-        else:
-            raise AttributeError
+    @property
+    def weeks(self) -> list:
+        return [self._days[fd:fd+7] for fd in range(0, self._length_in_days, 7)]
+
+    @property
+    def study_sessions(self) -> dict:
+        return self._study_sessions
+
+    @study_sessions.setter
+    def study_sessions(self, value: tuple) -> None:
+        day, goal, start, end = value
+        self._study_sessions[day].append({
+            "goal": goal,
+            "start": start,
+            "end": end,
+            "duration": self._calculate_session_duration(start, end)
+        })
+
+    @staticmethod
+    def _calculate_session_duration(start_time: str, end_time: str) -> int:
+        """Helper method to convert string start and end times into minutes"""
+        start_hr, start_min = int(start_time[:2]), int(start_time[3:])
+        end_hr, end_min = int(end_time[:2]), int(end_time[3:])
+        return (end_hr - start_hr) * 60 + end_min - start_min
+
+    def _get_list_of_days(self) -> list:
+        """Return a list of Day objects for each day of the iteration"""
+        list_of_days = []
+        for i in range(self._length_in_days):
+            days_date = self._first_day + timedelta(days=i)
+            list_of_days.append({
+                "date": days_date,
+                "day_of_week": days_date.strftime("%A"),
+                "day_and_month": days_date.strftime("%-d %b")
+            })
+        return list_of_days
+
+    # def generate_session(self, days_date: object, goal: str, start: str, end: str) -> None:
+    #     """Add a study session to the list of study sessions"""
+        # ss = _StudySession(goal, start, end)
+        # if not self._new_session_overlaps_existing(days_date, ss):
+        #     self.study_sessions[days_date].append(ss)
+        #     if not self.testing:
+        #         with open("./persistence/live.json", "w") as iteration_data:
+        #             json.dump(self.get_persistence_data(), iteration_data, indent=2)
+        # else:
+        #     raise AttributeError
 
     def _new_session_overlaps_existing(self, days_date: object, new_session: object) -> bool:
         for existing_session in self.study_sessions[days_date]:
@@ -105,7 +104,7 @@ class Iteration:
         return self.study_sessions[days_date]
 
     def get_sessions_totals(self) -> dict:
-        """Sum the minutes spent on learning goal and build goal this day"""
+        """Sum the minutes spent on learning goal and build goal this iteration"""
         totals = {"build": 0, "learning": 0}
         for day in self.study_sessions:
             for sesh in self.study_sessions[day]:
@@ -115,7 +114,7 @@ class Iteration:
     def get_persistence_data(self) -> dict:
         return {
             "start": self._first_day.strftime("%Y-%m-%d"),
-            "duration": self._duration,
+            "duration": self._length_in_days,
             "goals": self._goals,
             "study_sessions": self._get_study_sessions_dict()
         }

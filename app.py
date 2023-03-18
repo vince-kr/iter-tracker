@@ -8,9 +8,18 @@ a = Agile()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    iteration = a.current_iteration
     if request.method == "GET":
-        a.current_iteration.todays_date = date.today()
-        return render_template("tracker_page", iteration=a.current_iteration)
+        context = {
+            "todays_date": date.today(),
+            "counter": iteration.counter,
+            "start_to_end": iteration.start_to_end_string,
+            "weeks": iteration.weeks,
+            "study_sessions": iteration.study_sessions,
+            "time_spent_per_goal": iteration.time_spent,
+            "goals": iteration.goals
+        }
+        return render_template("tracker_page", context=context)
     else:  # it's POST
         date_of_session = date.fromisoformat(request.form["session_date"])
         session_data = (
