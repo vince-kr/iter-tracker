@@ -1,5 +1,5 @@
 import unittest
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from agile import Iteration
 
 
@@ -39,49 +39,43 @@ class TestIteration(unittest.TestCase):
         self.assertEqual(self.it.weeks[1][0]["day_of_week"], "Saturday")
         self.assertEqual(self.it.weeks[1][0]["day_and_month"], "11 Mar")
 
+    def test_iterationReportsOnTimeSpentPerGoal(self) -> None:
+        today = date.fromisoformat("2023-03-04")
+        self.it.generate_new_study_session(today, "build", "12:20", "12:50")
+        self.it.generate_new_study_session(today + timedelta(days=1), "build", "10:15", "10:45")
+        self.it.generate_new_study_session(today + timedelta(days=4), "learning", "06:40", "07:10")
+        self.it.generate_new_study_session(today + timedelta(days=10), "learning", "20:30", "21:00")
+        self.assertEqual({
+            "learning": 60,
+            "build": 60
+        }, self.it.time_spent_per_goal)
+
     def test_iterationObjectGeneratesThenReturnsStudySessions(self) -> None:
         day = date.fromisoformat("2023-03-04")
-        self.assertEqual([], self.it.study_sessions[day])
-        self.it.study_sessions = (day, "build", "20:00", "21:30")
+        self.assertEqual([], self.it.get_study_sessions_for_date(day))
+        self.it.generate_new_study_session(day, "build", "20:00", "21:30")
         self.assertEqual([{
-                "goal": "build",
-                "start": "20:00",
-                "end": "21:30",
-                "duration": 90
-            }], self.it.study_sessions[day])
+            "goal": "build",
+            "start": time.fromisoformat("20:00:00"),
+            "end": time.fromisoformat("21:30:00"),
+            "duration": 90
+        }], self.it.get_study_sessions_for_date(day))
 
-    # def testCreateThenRecallStudySession(self):
-    #     self.it.generate_session(
-    #             date.fromisoformat("2023-03-04"), "learning", "20:00", "21:00")
-    #     sesh = self.it.get_study_sessions_for_date(date.fromisoformat("2023-03-04"))[0]
-    #     self.assertEqual(sesh.duration, 60)
-    #     self.assertEqual(sesh.goal, "learning")
+    def test_ifStudySessionsOverlap_raisesAttributeError(self) -> None:
+        day = date.fromisoformat("2023-03-04")
+        self.it.generate_new_study_session(day, "build", "20:00", "21:00")
+        with self.assertRaises(AttributeError):
+            self.it.generate_new_study_session(day, "build", "19:30", "20:30")
+            self.it.generate_new_study_session(day, "learning", "20:00", "20:30")
 
-    # def testIterationReturnsTimeSpentOnGoals(self):
-    #     today = date.fromisoformat("2023-03-04")
-    #     self.it.generate_session(today, "build", "12:20", "12:50")
-    #     self.it.generate_session(today + timedelta(days=1), "build", "10:15", "10:45")
-    #     self.it.generate_session(today + timedelta(days=4), "learning", "06:40", "07:10")
-    #     self.it.generate_session(today + timedelta(days=10), "learning", "20:30", "21:00")
-    #     self.assertEqual(self.it.get_sessions_totals(), {
-    #         "build": 60,
-    #         "learning": 60
-    #         })
-
-    # def testWhenAddingOverlappingStudySessions_RaisesAttrError(self):
-    #     self.it.generate_session(
-    #         date.fromisoformat("2023-03-04"), "build", "21:10", "21:30")
-    #     with self.assertRaises(AttributeError):
-    #         self.it.generate_session(
-    #             date.fromisoformat("2023-03-04"), "learning", "21:20", "21:50")
-
-    def testIterationReturnsGoals(self):
+    def test_iterationReturnsGoals(self):
         self.iter_data["goals"]["time_goal"] = "240 minutes learning / 360 minutes build"
         self.iter_data["goals"]["learning_goal"] = "Some pages"
         self.iter_data["goals"]["build_goal"] = "A cool app"
         it = Iteration(self.iter_data)
-        self.assertEqual(it.learning_goal, "Some pages")
-        self.assertEqual(it.build_goal, "A cool app")
+        self.assertEqual("240 minutes learning / 360 minutes build", it.time_goal)
+        self.assertEqual("Some pages", it.learning_goal)
+        self.assertEqual("A cool app", it.build_goal)
 
     # def testIterationReturnsDictForPersistence(self):
     #     self.iter_data["duration"] = 7

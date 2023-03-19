@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 import json
 
 
@@ -21,13 +21,24 @@ class Iteration:
         self._days = self._get_list_of_days()
         self._last_day = self._days[-1]["date"]
         self._goals = it_da["goals"]
-        self.time_goal = self._goals["time_goal"]
-        self.learning_goal = self._goals["learning_goal"]
-        self.build_goal = self._goals["build_goal"]
         self._counter = it_da["counter"]
-        self.testing = "testing" in it_da and it_da["testing"]
+        self._testing = "testing" in it_da and it_da["testing"]
         self._study_sessions = {day["date"]: [] for day in self._days}
 
+# Helper methods to calculate class fields
+    def _get_list_of_days(self) -> list:
+        """Return a list of Day objects for each day of the iteration"""
+        list_of_days = []
+        for i in range(self._length_in_days):
+            days_date = self._first_day + timedelta(days=i)
+            list_of_days.append({
+                "date": days_date,
+                "day_of_week": days_date.strftime("%A"),
+                "day_and_month": days_date.strftime("%-d %b")
+            })
+        return list_of_days
+
+# Iteration properties required by template - require getters only
     @property
     def counter(self) -> int:
         """Return the position of the iteration in the list of all iterations"""
@@ -50,67 +61,64 @@ class Iteration:
         return [self._days[fd:fd+7] for fd in range(0, self._length_in_days, 7)]
 
     @property
-    def study_sessions(self) -> dict:
-        return self._study_sessions
+    def time_spent_per_goal(self) -> dict:
+        time_spent = {"learning": 0, "build": 0}
+        for day in self._study_sessions.values():
+            for sesh in day:
+                time_spent[sesh["goal"]] += sesh["duration"]
+        return time_spent
 
-    @study_sessions.setter
-    def study_sessions(self, value: tuple) -> None:
-        day, goal, start, end = value
-        self._study_sessions[day].append({
-            "goal": goal,
-            "start": start,
-            "end": end,
-            "duration": self._calculate_session_duration(start, end)
-        })
+    @property
+    def time_goal(self) -> dict:
+        return self._goals["time_goal"]
 
-    @staticmethod
-    def _calculate_session_duration(start_time: str, end_time: str) -> int:
-        """Helper method to convert string start and end times into minutes"""
-        start_hr, start_min = int(start_time[:2]), int(start_time[3:])
-        end_hr, end_min = int(end_time[:2]), int(end_time[3:])
-        return (end_hr - start_hr) * 60 + end_min - start_min
+    @property
+    def learning_goal(self) -> dict:
+        return self._goals["learning_goal"]
 
-    def _get_list_of_days(self) -> list:
-        """Return a list of Day objects for each day of the iteration"""
-        list_of_days = []
-        for i in range(self._length_in_days):
-            days_date = self._first_day + timedelta(days=i)
-            list_of_days.append({
-                "date": days_date,
-                "day_of_week": days_date.strftime("%A"),
-                "day_and_month": days_date.strftime("%-d %b")
-            })
-        return list_of_days
+    @property
+    def build_goal(self) -> dict:
+        return self._goals["build_goal"]
 
-    # def generate_session(self, days_date: object, goal: str, start: str, end: str) -> None:
-    #     """Add a study session to the list of study sessions"""
-        # ss = _StudySession(goal, start, end)
-        # if not self._new_session_overlaps_existing(days_date, ss):
-        #     self.study_sessions[days_date].append(ss)
-        #     if not self.testing:
-        #         with open("./persistence/live.json", "w") as iteration_data:
-        #             json.dump(self.get_persistence_data(), iteration_data, indent=2)
-        # else:
-        #     raise AttributeError
-
-    def _new_session_overlaps_existing(self, days_date: object, new_session: object) -> bool:
-        for existing_session in self.study_sessions[days_date]:
-            if existing_session.start <= new_session.start <= existing_session.end:
-                return True
-        return False
-
+# Logic to handle study sessions
     def get_study_sessions_for_date(self, days_date: object) -> list:
         """Return all study session objects for a given date"""
-        return self.study_sessions[days_date]
+        return self._study_sessions[days_date]
 
-    def get_sessions_totals(self) -> dict:
-        """Sum the minutes spent on learning goal and build goal this iteration"""
-        totals = {"build": 0, "learning": 0}
-        for day in self.study_sessions:
-            for sesh in self.study_sessions[day]:
-                totals[sesh.goal] += sesh.duration
-        return totals
+    def generate_new_study_session(self, day: object, goal: str, start: str, end: str) -> None:
+        ss = {
+            "goal": goal,
+            "start": self._string_to_time_obj(start),
+            "end": self._string_to_time_obj(end),
+            "duration": self._calculate_session_duration(start, end)
+        }
+        if self._new_session_overlaps_existing(day, ss["start"], ss["end"]):
+            raise AttributeError
+        self._study_sessions[day].append(ss)
 
+# noinspection PyMethodMayBeStatic
+    def _string_to_time_obj(self, time_string: str) -> object:
+        return time.fromisoformat(time_string + ":00")
+
+    def _calculate_session_duration(self, start_time: str, end_time: str) -> int:
+        """Helper method to convert string start and end times into minutes"""
+        start_hr, start_min = self._time_string_to_ints(start_time)
+        end_hr, end_min = self._time_string_to_ints(end_time)
+        return (end_hr - start_hr) * 60 + end_min - start_min
+
+# noinspection PyMethodMayBeStatic
+    def _time_string_to_ints(self, time_string: str):
+        return int(time_string[:2]), int(time_string[3:])
+
+    def _new_session_overlaps_existing(
+            self, day: object, new_start: object, new_end: object) -> bool:
+        starts_in_existing = any([es["start"] <= new_start < es["end"]
+                                  for es in self._study_sessions[day]])
+        ends_in_existing = any([es["start"] < new_end <= es["end"]
+                                for es in self._study_sessions[day]])
+        return starts_in_existing or ends_in_existing
+
+# Persistence logic
     def get_persistence_data(self) -> dict:
         return {
             "start": self._first_day.strftime("%Y-%m-%d"),
@@ -121,9 +129,9 @@ class Iteration:
 
     def _get_study_sessions_dict(self) -> dict:
         study_sessions_dict = {}
-        for day in self.study_sessions:
+        for day in self._study_sessions:
             study_sessions_dict[day.strftime("%Y-%m-%d")] = []
-            for session in self.study_sessions[day]:
+            for session in self._study_sessions[day]:
                 study_sessions_dict[day.strftime("%Y-%m-%d")].append(
                     {
                         "goal": session.goal,
