@@ -4,9 +4,6 @@ import json
 
 
 class StudySessions(collections.UserDict):
-    def get_for_date(self, days_date: object) -> list:
-        """Return all study session dicts for a given date"""
-        return self[days_date]
 
     def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
         ss = {
@@ -21,6 +18,7 @@ class StudySessions(collections.UserDict):
 
     # noinspection PyMethodMayBeStatic
     def _string_to_time_obj(self, time_string: str) -> object:
+        """Helper method to turn hh:mm string into time object"""
         return time.fromisoformat(time_string + ":00")
 
     def _calculate_session_duration(self, start_time: str, end_time: str) -> int:
@@ -41,6 +39,21 @@ class StudySessions(collections.UserDict):
                                 for es in self.data[day]])
         return starts_in_existing or ends_in_existing
 
+    def get_as_dict(self) -> dict:
+        study_sessions_dict = {}
+        for day in self:
+            study_sessions_dict[day.strftime("%Y-%m-%d")] = []
+            for session in self[day]:
+                study_sessions_dict[day.strftime("%Y-%m-%d")].append(
+                    {
+                        "goal": session["goal"],
+                        "start": session["start"].strftime("%H:%M"),
+                        "end": session["end"].strftime("%H:%M"),
+                        "duration": session["duration"]
+                    }
+                )
+        return study_sessions_dict
+
 
 class Iteration:
     def __init__(self, iteration_data: dict) -> None:
@@ -53,7 +66,9 @@ class Iteration:
         self._goals = it_da["goals"]
         self._counter = it_da["counter"]
         self._testing = "testing" in it_da and it_da["testing"]
-        self._study_sessions = StudySessions({day["date"]: [] for day in self._days})
+        self._study_sessions = StudySessions(
+            it_da.get("study_sessions", {day["date"]: [] for day in self._days})
+        )
 
 # Helper methods to calculate class fields
     def _get_list_of_days(self) -> list:
@@ -117,9 +132,12 @@ class Iteration:
 # Interface to StudySessions logic
     def generate_new_study_session(self, *args) -> None:
         self._study_sessions.generate_new(*args)
+        if not self._testing:
+            with open("./persistence/live.json", "w") as iteration_data:
+                json.dump(self.get_persistence_data(), iteration_data, indent=2)
 
     def get_study_sessions_for_date(self, days_date: object) -> list:
-        return self._study_sessions.get_for_date(days_date)
+        return self._study_sessions[days_date]
 
 # Persistence logic
     def get_persistence_data(self) -> dict:
@@ -127,22 +145,8 @@ class Iteration:
             "start": self._first_day.strftime("%Y-%m-%d"),
             "duration": self._length_in_days,
             "goals": self._goals,
-            "study_sessions": self._get_study_sessions_dict()
+            "study_sessions": self._study_sessions.get_as_dict()
         }
-
-    def _get_study_sessions_dict(self) -> dict:
-        study_sessions_dict = {}
-        for day in self._study_sessions:
-            study_sessions_dict[day.strftime("%Y-%m-%d")] = []
-            for session in self._study_sessions[day]:
-                study_sessions_dict[day.strftime("%Y-%m-%d")].append(
-                    {
-                        "goal": session.goal,
-                        "start": session.start.strftime("%H:%M"),
-                        "end": session.end.strftime("%H:%M")
-                    }
-                )
-        return study_sessions_dict
 
 
 class Agile:
