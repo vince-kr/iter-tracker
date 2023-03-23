@@ -13,13 +13,15 @@ def index():
         context = {
             "todays_date": date.today(),
             "counter": iteration.counter,
-            "start_to_end": iteration.start_to_end_string,
+            "start_to_end": iteration.start_to_end,
             "weeks": iteration.weeks,
             "study_sessions": iteration.study_sessions,
-            "time_spent_per_goal": iteration.time_spent,
-            "goals": iteration.goals
+            "time_spent_per_goal": iteration.time_spent_per_goal,
+            "time_goal": iteration.time_goal,
+            "learning_goal": iteration.learning_goal,
+            "build_goal": iteration.build_goal
         }
-        return render_template("tracker_page", context=context)
+        return render_template("tracker_page", iteration=context)
     else:  # it's POST
         date_of_session = date.fromisoformat(request.form["session_date"])
         session_data = (
@@ -28,13 +30,13 @@ def index():
             request.form["start_time"],
             request.form["end_time"]
         )
-        add_study_session_to_current_iteration(a.current_iteration, session_data)
+        add_study_session_to_current_iteration(iteration, session_data)
         return redirect(url_for("index"))
 
 
 def add_study_session_to_current_iteration(iteration: object, session_data: tuple) -> object:
     try:
-        iteration.generate_session(*session_data)
+        iteration.generate_new_study_session(*session_data)
     except AttributeError:
         iteration.error_message = "ERROR: overlapping study sessions"
     return iteration

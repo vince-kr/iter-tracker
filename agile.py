@@ -1,15 +1,45 @@
+import collections
 from datetime import date, time, timedelta
 import json
 
 
-class _Day:
-    def __init__(self, days_date: object) -> None:
-        self.date = days_date
-        self.day_of_week = self.date.strftime("%A")
-        self.day_and_month = self.date.strftime("%-d %b")
+class StudySessions(collections.UserDict):
+    def get_for_date(self, days_date: object) -> list:
+        """Return all study session dicts for a given date"""
+        return self[days_date]
 
-    def __eq__(self, _o: object) -> bool:
-        return self.date == _o.date
+    def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
+        ss = {
+            "goal": goal,
+            "start": self._string_to_time_obj(start),
+            "end": self._string_to_time_obj(end),
+            "duration": self._calculate_session_duration(start, end)
+        }
+        if self._new_session_overlaps_existing(day, ss["start"], ss["end"]):
+            raise AttributeError
+        self[day].append(ss)
+
+    # noinspection PyMethodMayBeStatic
+    def _string_to_time_obj(self, time_string: str) -> object:
+        return time.fromisoformat(time_string + ":00")
+
+    def _calculate_session_duration(self, start_time: str, end_time: str) -> int:
+        """Helper method to convert string start and end times into minutes"""
+        start_hr, start_min = self._time_string_to_ints(start_time)
+        end_hr, end_min = self._time_string_to_ints(end_time)
+        return (end_hr - start_hr) * 60 + end_min - start_min
+
+    # noinspection PyMethodMayBeStatic
+    def _time_string_to_ints(self, time_string: str):
+        return int(time_string[:2]), int(time_string[3:])
+
+    def _new_session_overlaps_existing(
+            self, day: object, new_start: object, new_end: object) -> bool:
+        starts_in_existing = any([es["start"] <= new_start < es["end"]
+                                  for es in self.data[day]])
+        ends_in_existing = any([es["start"] < new_end <= es["end"]
+                                for es in self.data[day]])
+        return starts_in_existing or ends_in_existing
 
 
 class Iteration:
@@ -23,7 +53,7 @@ class Iteration:
         self._goals = it_da["goals"]
         self._counter = it_da["counter"]
         self._testing = "testing" in it_da and it_da["testing"]
-        self._study_sessions = {day["date"]: [] for day in self._days}
+        self._study_sessions = StudySessions({day["date"]: [] for day in self._days})
 
 # Helper methods to calculate class fields
     def _get_list_of_days(self) -> list:
@@ -61,6 +91,10 @@ class Iteration:
         return [self._days[fd:fd+7] for fd in range(0, self._length_in_days, 7)]
 
     @property
+    def study_sessions(self) -> object:
+        return self._study_sessions
+
+    @property
     def time_spent_per_goal(self) -> dict:
         time_spent = {"learning": 0, "build": 0}
         for day in self._study_sessions.values():
@@ -80,43 +114,12 @@ class Iteration:
     def build_goal(self) -> dict:
         return self._goals["build_goal"]
 
-# Logic to handle study sessions
+# Interface to StudySessions logic
+    def generate_new_study_session(self, *args) -> None:
+        self._study_sessions.generate_new(*args)
+
     def get_study_sessions_for_date(self, days_date: object) -> list:
-        """Return all study session objects for a given date"""
-        return self._study_sessions[days_date]
-
-    def generate_new_study_session(self, day: object, goal: str, start: str, end: str) -> None:
-        ss = {
-            "goal": goal,
-            "start": self._string_to_time_obj(start),
-            "end": self._string_to_time_obj(end),
-            "duration": self._calculate_session_duration(start, end)
-        }
-        if self._new_session_overlaps_existing(day, ss["start"], ss["end"]):
-            raise AttributeError
-        self._study_sessions[day].append(ss)
-
-# noinspection PyMethodMayBeStatic
-    def _string_to_time_obj(self, time_string: str) -> object:
-        return time.fromisoformat(time_string + ":00")
-
-    def _calculate_session_duration(self, start_time: str, end_time: str) -> int:
-        """Helper method to convert string start and end times into minutes"""
-        start_hr, start_min = self._time_string_to_ints(start_time)
-        end_hr, end_min = self._time_string_to_ints(end_time)
-        return (end_hr - start_hr) * 60 + end_min - start_min
-
-# noinspection PyMethodMayBeStatic
-    def _time_string_to_ints(self, time_string: str):
-        return int(time_string[:2]), int(time_string[3:])
-
-    def _new_session_overlaps_existing(
-            self, day: object, new_start: object, new_end: object) -> bool:
-        starts_in_existing = any([es["start"] <= new_start < es["end"]
-                                  for es in self._study_sessions[day]])
-        ends_in_existing = any([es["start"] < new_end <= es["end"]
-                                for es in self._study_sessions[day]])
-        return starts_in_existing or ends_in_existing
+        return self._study_sessions.get_for_date(days_date)
 
 # Persistence logic
     def get_persistence_data(self) -> dict:
