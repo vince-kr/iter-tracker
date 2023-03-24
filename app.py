@@ -19,7 +19,7 @@ def index():
             "time_spent_per_goal": iteration.time_spent_per_goal,
             "time_goal": iteration.time_goal,
             "learning_goal": iteration.learning_goal,
-            "build_goal": iteration.build_goal
+            "build_goal": iteration.build_goal,
         }
         return render_template("tracker_page", iteration=context)
     else:  # it's POST
@@ -28,13 +28,15 @@ def index():
             date_of_session,
             request.form["goal_type"],
             request.form["start_time"],
-            request.form["end_time"]
+            request.form["end_time"],
         )
         add_study_session_to_current_iteration(iteration, session_data)
         return redirect(url_for("index"))
 
 
-def add_study_session_to_current_iteration(iteration: object, session_data: tuple) -> object:
+def add_study_session_to_current_iteration(
+    iteration: object, session_data: tuple
+) -> object:
     try:
         iteration.generate_new_study_session(*session_data)
     except AttributeError:

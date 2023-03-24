@@ -4,13 +4,18 @@ import json
 
 
 class StudySessions(collections.UserDict):
+    def __init__(self, mapping):
+        self.data = {date.fromisoformat(key): val for (key, val) in mapping.items()}
+
+    def __setitem__(self, key, value) -> None:
+        pass
 
     def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
         ss = {
             "goal": goal,
             "start": self._string_to_time_obj(start),
             "end": self._string_to_time_obj(end),
-            "duration": self._calculate_session_duration(start, end)
+            "duration": self._calculate_session_duration(start, end),
         }
         if self._new_session_overlaps_existing(day, ss["start"], ss["end"]):
             raise AttributeError
@@ -32,11 +37,14 @@ class StudySessions(collections.UserDict):
         return int(time_string[:2]), int(time_string[3:])
 
     def _new_session_overlaps_existing(
-            self, day: object, new_start: object, new_end: object) -> bool:
-        starts_in_existing = any([es["start"] <= new_start < es["end"]
-                                  for es in self.data[day]])
-        ends_in_existing = any([es["start"] < new_end <= es["end"]
-                                for es in self.data[day]])
+        self, day: object, new_start: object, new_end: object
+    ) -> bool:
+        starts_in_existing = any(
+            [es["start"] <= new_start < es["end"] for es in self.data[day]]
+        )
+        ends_in_existing = any(
+            [es["start"] < new_end <= es["end"] for es in self.data[day]]
+        )
         return starts_in_existing or ends_in_existing
 
     def get_as_dict(self) -> dict:
@@ -49,7 +57,7 @@ class StudySessions(collections.UserDict):
                         "goal": session["goal"],
                         "start": session["start"].strftime("%H:%M"),
                         "end": session["end"].strftime("%H:%M"),
-                        "duration": session["duration"]
+                        "duration": session["duration"],
                     }
                 )
         return study_sessions_dict
@@ -67,23 +75,28 @@ class Iteration:
         self._counter = it_da["counter"]
         self._testing = "testing" in it_da and it_da["testing"]
         self._study_sessions = StudySessions(
-            it_da.get("study_sessions", {day["date"]: [] for day in self._days})
+            it_da.get(
+                "study_sessions",
+                {day["date"].strftime("%Y-%m-%d"): [] for day in self._days},
+            )
         )
 
-# Helper methods to calculate class fields
+    # Helper methods to calculate class fields
     def _get_list_of_days(self) -> list:
         """Return a list of Day objects for each day of the iteration"""
         list_of_days = []
         for i in range(self._length_in_days):
             days_date = self._first_day + timedelta(days=i)
-            list_of_days.append({
-                "date": days_date,
-                "day_of_week": days_date.strftime("%A"),
-                "day_and_month": days_date.strftime("%-d %b")
-            })
+            list_of_days.append(
+                {
+                    "date": days_date,
+                    "day_of_week": days_date.strftime("%A"),
+                    "day_and_month": days_date.strftime("%-d %b"),
+                }
+            )
         return list_of_days
 
-# Iteration properties required by template - require getters only
+    # Iteration properties required by template - require getters only
     @property
     def counter(self) -> int:
         """Return the position of the iteration in the list of all iterations"""
@@ -92,8 +105,9 @@ class Iteration:
     @property
     def start_to_end(self) -> str:
         """Return a string with the first and last date of the iteration"""
-        iteration_spans_multiple_months = (
-                self._first_day.strftime("%B") != self._last_day.strftime("%B"))
+        iteration_spans_multiple_months = self._first_day.strftime(
+            "%B"
+        ) != self._last_day.strftime("%B")
         first_day_string = self._first_day.strftime("%B %-d")
         if iteration_spans_multiple_months:
             last_day_string = self._last_day.strftime("%B %-d")
@@ -103,7 +117,7 @@ class Iteration:
 
     @property
     def weeks(self) -> list:
-        return [self._days[fd:fd+7] for fd in range(0, self._length_in_days, 7)]
+        return [self._days[fd : fd + 7] for fd in range(0, self._length_in_days, 7)]
 
     @property
     def study_sessions(self) -> object:
@@ -129,7 +143,7 @@ class Iteration:
     def build_goal(self) -> dict:
         return self._goals["build_goal"]
 
-# Interface to StudySessions logic
+    # Interface to StudySessions logic
     def generate_new_study_session(self, *args) -> None:
         self._study_sessions.generate_new(*args)
         if not self._testing:
@@ -139,13 +153,13 @@ class Iteration:
     def get_study_sessions_for_date(self, days_date: object) -> list:
         return self._study_sessions[days_date]
 
-# Persistence logic
+    # Persistence logic
     def get_persistence_data(self) -> dict:
         return {
             "start": self._first_day.strftime("%Y-%m-%d"),
             "duration": self._length_in_days,
             "goals": self._goals,
-            "study_sessions": self._study_sessions.get_as_dict()
+            "study_sessions": self._study_sessions.get_as_dict(),
         }
 
 
