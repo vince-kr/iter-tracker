@@ -4,22 +4,17 @@ import json
 
 
 class StudySessions(collections.UserDict):
-    def __init__(self, mapping):
-        self.data = {date.fromisoformat(key): val for (key, val) in mapping.items()}
-
-    def __setitem__(self, key, value) -> None:
-        pass
 
     def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
-        ss = {
+        new_session = {
             "goal": goal,
             "start": self._string_to_time_obj(start),
             "end": self._string_to_time_obj(end),
             "duration": self._calculate_session_duration(start, end),
         }
-        if self._new_session_overlaps_existing(day, ss["start"], ss["end"]):
+        if self._new_session_overlaps_existing(day, new_session["start"], new_session["end"]):
             raise AttributeError
-        self[day].append(ss)
+        self[day].append(new_session)
 
     # noinspection PyMethodMayBeStatic
     def _string_to_time_obj(self, time_string: str) -> object:
@@ -57,7 +52,6 @@ class StudySessions(collections.UserDict):
                         "goal": session["goal"],
                         "start": session["start"].strftime("%H:%M"),
                         "end": session["end"].strftime("%H:%M"),
-                        "duration": session["duration"],
                     }
                 )
         return study_sessions_dict
@@ -74,12 +68,7 @@ class Iteration:
         self._goals = it_da["goals"]
         self._counter = it_da["counter"]
         self._testing = "testing" in it_da and it_da["testing"]
-        self._study_sessions = StudySessions(
-            it_da.get(
-                "study_sessions",
-                {day["date"].strftime("%Y-%m-%d"): [] for day in self._days},
-            )
-        )
+        self._study_sessions = StudySessions(it_da["study_sessions"])
 
     # Helper methods to calculate class fields
     def _get_list_of_days(self) -> list:
@@ -117,7 +106,7 @@ class Iteration:
 
     @property
     def weeks(self) -> list:
-        return [self._days[fd : fd + 7] for fd in range(0, self._length_in_days, 7)]
+        return [self._days[fd:fd + 7] for fd in range(0, self._length_in_days, 7)]
 
     @property
     def study_sessions(self) -> object:
@@ -170,4 +159,31 @@ class Agile:
         iteration_data["first_day"] = date.fromisoformat(iteration_data["start"])
         with open("./persistence/count") as c:
             iteration_data["counter"] = c.read()
+        iteration_data["study_sessions"] = self._create_study_sessions_dict(
+            iteration_data["study_sessions"])
         self.current_iteration = Iteration(iteration_data)
+
+    def _create_study_sessions_dict(self, from_persistence: dict) -> dict:
+        new_dict = {date.fromisoformat(key): val for (key, val)
+                    in from_persistence.items()}
+        for day in new_dict:
+            for sesh in new_dict[day]:
+                sesh["duration"] = self._calculate_duration(sesh["start"], sesh["end"])
+                sesh["start"] = self._string_to_time_obj(sesh["start"])
+                sesh["end"] = self._string_to_time_obj(sesh["end"])
+        return new_dict
+
+    def _calculate_duration(self, start_time: str, end_time: str) -> int:
+        """Helper method to convert string start and end times into minutes"""
+        start_hr, start_min = self._time_string_to_ints(start_time)
+        end_hr, end_min = self._time_string_to_ints(end_time)
+        return (end_hr - start_hr) * 60 + end_min - start_min
+
+    # noinspection PyMethodMayBeStatic
+    def _time_string_to_ints(self, time_string: str):
+        return int(time_string[:2]), int(time_string[3:])
+
+    # noinspection PyMethodMayBeStatic
+    def _string_to_time_obj(self, time_string: str) -> object:
+        """Helper method to turn hh:mm string into time object"""
+        return time.fromisoformat(time_string + ":00")

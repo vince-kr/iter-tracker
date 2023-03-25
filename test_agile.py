@@ -5,14 +5,19 @@ from agile import Iteration
 
 class TestIteration(unittest.TestCase):
     def setUp(self):
+        duration = 14
+        first_day = date.fromisoformat("2023-03-04")
+        study_sessions = {date.fromisoformat("2023-03-04")+timedelta(days=i): []
+                          for i in range(duration)}
         self.iter_data = {
-            "duration": 14,
-            "first_day": date.fromisoformat("2023-03-04"),
+            "duration": duration,
+            "first_day": first_day,
             "goals": {
                 "time_goal": "No time",
                 "learning_goal": "No learning",
                 "build_goal": "No build",
             },
+            "study_sessions": study_sessions,
             "counter": 3,
             "testing": True,
         }
@@ -50,7 +55,7 @@ class TestIteration(unittest.TestCase):
         self.it.generate_new_study_session(
             today + timedelta(days=10), "learning", "20:30", "21:00"
         )
-        self.assertEqual({"learning": 60, "build": 60}, self.it.time_spent_per_goal)
+        self.assertEqual(self.it.time_spent_per_goal, {"learning": 60, "build": 60})
 
     def test_iterationObjectGeneratesThenReturnsStudySessions(self) -> None:
         day = date.fromisoformat("2023-03-04")
@@ -87,19 +92,16 @@ class TestIteration(unittest.TestCase):
         self.assertEqual("A cool app", it.build_goal)
 
     def testIterationReturnsDictForPersistence(self):
-        self.iter_data["duration"] = 7
-        it = Iteration(self.iter_data)
-        it.generate_new_study_session(
+        self.it.generate_new_study_session(
             date.fromisoformat("2023-03-04"), "build", "20:30", "21:30"
         )
-        it.generate_new_study_session(
+        self.it.generate_new_study_session(
             date.fromisoformat("2023-03-06"), "learning", "14:00", "14:40"
         )
         self.assertEqual(
-            it.get_persistence_data(),
             {
                 "start": "2023-03-04",
-                "duration": 7,
+                "duration": 14,
                 "goals": {
                     "time_goal": "No time",
                     "learning_goal": "No learning",
@@ -111,7 +113,6 @@ class TestIteration(unittest.TestCase):
                             "goal": "build",
                             "start": "20:30",
                             "end": "21:30",
-                            "duration": 60,
                         }
                     ],
                     "2023-03-05": [],
@@ -120,16 +121,27 @@ class TestIteration(unittest.TestCase):
                             "goal": "learning",
                             "start": "14:00",
                             "end": "14:40",
-                            "duration": 40,
                         }
                     ],
                     "2023-03-07": [],
                     "2023-03-08": [],
                     "2023-03-09": [],
                     "2023-03-10": [],
+                    "2023-03-11": [],
+                    "2023-03-12": [],
+                    "2023-03-13": [],
+                    "2023-03-14": [],
+                    "2023-03-15": [],
+                    "2023-03-16": [],
+                    "2023-03-17": [],
                 },
             },
+            self.it.get_persistence_data(),
         )
+
+    def testLoadIterationFromPersistenceDict(self) -> None:
+        pass
+        # self.assertEqual(expected, actual)
 
 
 class TestAgile(unittest.TestCase):
