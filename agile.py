@@ -3,58 +3,20 @@ from datetime import date, time, timedelta
 import json
 
 
-class StudySessions(collections.UserDict):
-
-    def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
-        new_session = {
-            "goal": goal,
-            "start": self._string_to_time_obj(start),
-            "end": self._string_to_time_obj(end),
-            "duration": self._calculate_session_duration(start, end),
+class Agile:
+    def __init__(self) -> None:
+        with open("./persistence/live.json") as iteration_data:
+            iteration_data = json.load(iteration_data)
+        new_iteration_data = {
+            "first_day": date.fromisoformat(iteration_data["start"]),
+            "duration": iteration_data["duration"],
+            "goals": iteration_data["goals"],
         }
-        if self._new_session_overlaps_existing(day, new_session["start"], new_session["end"]):
-            raise AttributeError
-        self[day].append(new_session)
-
-    # noinspection PyMethodMayBeStatic
-    def _string_to_time_obj(self, time_string: str) -> object:
-        """Helper method to turn hh:mm string into time object"""
-        return time.fromisoformat(time_string + ":00")
-
-    def _calculate_session_duration(self, start_time: str, end_time: str) -> int:
-        """Helper method to convert string start and end times into minutes"""
-        start_hr, start_min = self._time_string_to_ints(start_time)
-        end_hr, end_min = self._time_string_to_ints(end_time)
-        return (end_hr - start_hr) * 60 + end_min - start_min
-
-    # noinspection PyMethodMayBeStatic
-    def _time_string_to_ints(self, time_string: str):
-        return int(time_string[:2]), int(time_string[3:])
-
-    def _new_session_overlaps_existing(
-        self, day: object, new_start: object, new_end: object
-    ) -> bool:
-        starts_in_existing = any(
-            [es["start"] <= new_start < es["end"] for es in self.data[day]]
-        )
-        ends_in_existing = any(
-            [es["start"] < new_end <= es["end"] for es in self.data[day]]
-        )
-        return starts_in_existing or ends_in_existing
-
-    def get_as_dict(self) -> dict:
-        study_sessions_dict = {}
-        for day in self:
-            study_sessions_dict[day.strftime("%Y-%m-%d")] = []
-            for session in self[day]:
-                study_sessions_dict[day.strftime("%Y-%m-%d")].append(
-                    {
-                        "goal": session["goal"],
-                        "start": session["start"].strftime("%H:%M"),
-                        "end": session["end"].strftime("%H:%M"),
-                    }
-                )
-        return study_sessions_dict
+        with open("./persistence/count") as c:
+            new_iteration_data["counter"] = c.read()
+        self.current_iteration = Iteration(new_iteration_data)
+        self.current_iteration.load_study_sessions_from_persistence(
+            iteration_data["study_sessions"])
 
 
 class Iteration:
@@ -68,7 +30,9 @@ class Iteration:
         self._goals = it_da["goals"]
         self._counter = it_da["counter"]
         self._testing = "testing" in it_da and it_da["testing"]
-        self._study_sessions = StudySessions(it_da["study_sessions"])
+        self._study_sessions = StudySessions(
+            {day["date"]: [] for day in self._days}
+        )
 
     # Helper methods to calculate class fields
     def _get_list_of_days(self) -> list:
@@ -139,8 +103,16 @@ class Iteration:
             with open("./persistence/live.json", "w") as iteration_data:
                 json.dump(self.get_persistence_data(), iteration_data, indent=2)
 
-    def get_study_sessions_for_date(self, days_date: object) -> list:
-        return self._study_sessions[days_date]
+    def load_study_sessions_from_persistence(self, study_sessions: dict) -> None:
+        for day in study_sessions:
+            for sesh in study_sessions[day]:
+                session_data = (
+                    date.fromisoformat(day),
+                    sesh["goal"],
+                    sesh["start"],
+                    sesh["end"],
+                )
+                self._study_sessions.generate_new(*session_data)
 
     # Persistence logic
     def get_persistence_data(self) -> dict:
@@ -152,28 +124,25 @@ class Iteration:
         }
 
 
-class Agile:
-    def __init__(self) -> None:
-        with open("./persistence/live.json") as iteration_data:
-            iteration_data = json.load(iteration_data)
-        iteration_data["first_day"] = date.fromisoformat(iteration_data["start"])
-        with open("./persistence/count") as c:
-            iteration_data["counter"] = c.read()
-        iteration_data["study_sessions"] = self._create_study_sessions_dict(
-            iteration_data["study_sessions"])
-        self.current_iteration = Iteration(iteration_data)
+class StudySessions(collections.UserDict):
 
-    def _create_study_sessions_dict(self, from_persistence: dict) -> dict:
-        new_dict = {date.fromisoformat(key): val for (key, val)
-                    in from_persistence.items()}
-        for day in new_dict:
-            for sesh in new_dict[day]:
-                sesh["duration"] = self._calculate_duration(sesh["start"], sesh["end"])
-                sesh["start"] = self._string_to_time_obj(sesh["start"])
-                sesh["end"] = self._string_to_time_obj(sesh["end"])
-        return new_dict
+    def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
+        new_session = {
+            "goal": goal,
+            "start": self._string_to_time_obj(start),
+            "end": self._string_to_time_obj(end),
+            "duration": self._calculate_session_duration(start, end),
+        }
+        if self._new_session_overlaps_existing(day, new_session["start"], new_session["end"]):
+            raise AttributeError
+        self[day].append(new_session)
 
-    def _calculate_duration(self, start_time: str, end_time: str) -> int:
+    # noinspection PyMethodMayBeStatic
+    def _string_to_time_obj(self, time_string: str) -> object:
+        """Helper method to turn hh:mm string into time object"""
+        return time.fromisoformat(time_string + ":00")
+
+    def _calculate_session_duration(self, start_time: str, end_time: str) -> int:
         """Helper method to convert string start and end times into minutes"""
         start_hr, start_min = self._time_string_to_ints(start_time)
         end_hr, end_min = self._time_string_to_ints(end_time)
@@ -183,7 +152,27 @@ class Agile:
     def _time_string_to_ints(self, time_string: str):
         return int(time_string[:2]), int(time_string[3:])
 
-    # noinspection PyMethodMayBeStatic
-    def _string_to_time_obj(self, time_string: str) -> object:
-        """Helper method to turn hh:mm string into time object"""
-        return time.fromisoformat(time_string + ":00")
+    def _new_session_overlaps_existing(
+        self, day: object, new_start: object, new_end: object
+    ) -> bool:
+        starts_in_existing = any(
+            [es["start"] <= new_start < es["end"] for es in self.data[day]]
+        )
+        ends_in_existing = any(
+            [es["start"] < new_end <= es["end"] for es in self.data[day]]
+        )
+        return starts_in_existing or ends_in_existing
+
+    def get_as_dict(self) -> dict:
+        study_sessions_dict = {}
+        for day in self:
+            study_sessions_dict[day.strftime("%Y-%m-%d")] = []
+            for session in self[day]:
+                study_sessions_dict[day.strftime("%Y-%m-%d")].append(
+                    {
+                        "goal": session["goal"],
+                        "start": session["start"].strftime("%H:%M"),
+                        "end": session["end"].strftime("%H:%M"),
+                    }
+                )
+        return study_sessions_dict

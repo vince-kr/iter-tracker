@@ -1,5 +1,5 @@
 import unittest
-from datetime import date, time, timedelta
+from datetime import date, timedelta
 from agile import Iteration
 
 
@@ -56,22 +56,6 @@ class TestIteration(unittest.TestCase):
             today + timedelta(days=10), "learning", "20:30", "21:00"
         )
         self.assertEqual(self.it.time_spent_per_goal, {"learning": 60, "build": 60})
-
-    def test_iterationObjectGeneratesThenReturnsStudySessions(self) -> None:
-        day = date.fromisoformat("2023-03-04")
-        self.assertEqual([], self.it.get_study_sessions_for_date(day))
-        self.it.generate_new_study_session(day, "build", "20:00", "21:30")
-        self.assertEqual(
-            [
-                {
-                    "goal": "build",
-                    "start": time.fromisoformat("20:00:00"),
-                    "end": time.fromisoformat("21:30:00"),
-                    "duration": 90,
-                }
-            ],
-            self.it.get_study_sessions_for_date(day),
-        )
 
     def test_ifStudySessionsOverlap_raisesAttributeError(self) -> None:
         day = date.fromisoformat("2023-03-04")
@@ -138,10 +122,6 @@ class TestIteration(unittest.TestCase):
             },
             self.it.get_persistence_data(),
         )
-
-    def testLoadIterationFromPersistenceDict(self) -> None:
-        pass
-        # self.assertEqual(expected, actual)
 
 
 class TestAgile(unittest.TestCase):
