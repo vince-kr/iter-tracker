@@ -16,7 +16,8 @@ class Agile:
             new_iteration_data["counter"] = c.read()
         self.current_iteration = Iteration(new_iteration_data)
         self.current_iteration.load_study_sessions_from_persistence(
-            iteration_data["study_sessions"])
+            iteration_data["study_sessions"]
+        )
 
 
 class Iteration:
@@ -29,9 +30,7 @@ class Iteration:
         self._goals = it_da["goals"]
         self._counter = it_da["counter"]
         self._testing = "testing" in it_da and it_da["testing"]
-        self._study_sessions = StudySessions(
-            {day["date"]: [] for day in self._days}
-        )
+        self._study_sessions = StudySessions({day["date"]: [] for day in self._days})
 
     def _get_list_of_days(self) -> list:
         """Return a list of Day objects for each day of the iteration"""
@@ -69,7 +68,7 @@ class Iteration:
     @property
     def weeks(self) -> list:
         """Return a list of weeks with each week a list of 7 days"""
-        return [self._days[fd:fd + 7] for fd in range(0, self._length_in_days, 7)]
+        return [self._days[fd : fd + 7] for fd in range(0, self._length_in_days, 7)]
 
     @property
     def study_sessions(self) -> object:
@@ -130,7 +129,6 @@ class Iteration:
 
 
 class StudySessions(collections.UserDict):
-
     def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
         """Add a new study session - this should become __setitem__ at some point"""
         new_session = {
@@ -139,7 +137,9 @@ class StudySessions(collections.UserDict):
             "end": self._string_to_time_obj(end),
             "duration": self._calculate_session_duration(start, end),
         }
-        if self._new_session_overlaps_existing(day, new_session["start"], new_session["end"]):
+        if self._new_session_overlaps_existing(
+            day, new_session["start"], new_session["end"]
+        ):
             raise AttributeError
         self[day].append(new_session)
 

@@ -7,8 +7,10 @@ class TestIteration(unittest.TestCase):
     def setUp(self):
         duration = 14
         first_day = date.fromisoformat("2023-03-04")
-        study_sessions = {date.fromisoformat("2023-03-04")+timedelta(days=i): []
-                          for i in range(duration)}
+        study_sessions = {
+            date.fromisoformat("2023-03-04") + timedelta(days=i): []
+            for i in range(duration)
+        }
         self.iter_data = {
             "duration": duration,
             "first_day": first_day,
