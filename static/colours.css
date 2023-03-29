@@ -1,0 +1,13 @@
+:root {
+  --background: #240b00;
+  --alternate: #246000;
+  --foreground: #ffc;
+}
+
+.brown_background {
+  background-color: var(--background);
+}
+
+.pale_foreground {
+  color: var(--foreground);
+}

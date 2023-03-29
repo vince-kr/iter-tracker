@@ -36,9 +36,8 @@ def index():
 
 def add_study_session_to_current_iteration(
     iteration: object, session_data: tuple
-) -> object:
+) -> None:
     try:
         iteration.generate_new_study_session(*session_data)
     except AttributeError:
         iteration.error_message = "ERROR: overlapping study sessions"
-    return iteration

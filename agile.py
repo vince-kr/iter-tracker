@@ -23,7 +23,6 @@ class Iteration:
     def __init__(self, iteration_data: dict) -> None:
         it_da = iteration_data
         self._length_in_days = it_da["duration"]
-        self._length_in_weeks = self._length_in_days // 7
         self._first_day = it_da["first_day"]
         self._days = self._get_list_of_days()
         self._last_day = self._days[-1]["date"]
@@ -34,7 +33,6 @@ class Iteration:
             {day["date"]: [] for day in self._days}
         )
 
-    # Helper methods to calculate class fields
     def _get_list_of_days(self) -> list:
         """Return a list of Day objects for each day of the iteration"""
         list_of_days = []
@@ -70,14 +68,17 @@ class Iteration:
 
     @property
     def weeks(self) -> list:
+        """Return a list of weeks with each week a list of 7 days"""
         return [self._days[fd:fd + 7] for fd in range(0, self._length_in_days, 7)]
 
     @property
     def study_sessions(self) -> object:
+        """Return the dict of study sessions"""
         return self._study_sessions
 
     @property
     def time_spent_per_goal(self) -> dict:
+        """Return time spent for both learning and build goals"""
         time_spent = {"learning": 0, "build": 0}
         for day in self._study_sessions.values():
             for sesh in day:
@@ -98,12 +99,15 @@ class Iteration:
 
     # Interface to StudySessions logic
     def generate_new_study_session(self, *args) -> None:
+        """Pass arguments on to the appropriate StudySessions method,
+        then run persistence"""
         self._study_sessions.generate_new(*args)
         if not self._testing:
             with open("./persistence/live.json", "w") as iteration_data:
                 json.dump(self.get_persistence_data(), iteration_data, indent=2)
 
     def load_study_sessions_from_persistence(self, study_sessions: dict) -> None:
+        """Create a new study sessions dict using data from persistence"""
         for day in study_sessions:
             for sesh in study_sessions[day]:
                 session_data = (
@@ -116,6 +120,7 @@ class Iteration:
 
     # Persistence logic
     def get_persistence_data(self) -> dict:
+        """Prepare a dict for JSON-ification"""
         return {
             "start": self._first_day.strftime("%Y-%m-%d"),
             "duration": self._length_in_days,
@@ -127,6 +132,7 @@ class Iteration:
 class StudySessions(collections.UserDict):
 
     def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
+        """Add a new study session - this should become __setitem__ at some point"""
         new_session = {
             "goal": goal,
             "start": self._string_to_time_obj(start),
@@ -150,11 +156,13 @@ class StudySessions(collections.UserDict):
 
     # noinspection PyMethodMayBeStatic
     def _time_string_to_ints(self, time_string: str):
+        """Helper method to returns hr:mn from time string"""
         return int(time_string[:2]), int(time_string[3:])
 
     def _new_session_overlaps_existing(
         self, day: object, new_start: object, new_end: object
     ) -> bool:
+        """Return True if a new session overlaps an existing one on the same day"""
         starts_in_existing = any(
             [es["start"] <= new_start < es["end"] for es in self.data[day]]
         )
@@ -164,6 +172,9 @@ class StudySessions(collections.UserDict):
         return starts_in_existing or ends_in_existing
 
     def get_as_dict(self) -> dict:
+        """Prepare StudySessions dict for JSON-ification:
+        Use strings for keys instead of date objects
+        Use strings for start & end time instead of time objects"""
         study_sessions_dict = {}
         for day in self:
             study_sessions_dict[day.strftime("%Y-%m-%d")] = []

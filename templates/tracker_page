@@ -1,78 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="brown_background">
 
 <head>
-  <meta charset="UTF-8" />
   <title>Track my learning</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="description" content="" />
-  <link rel="stylesheet" type="text/css"
-    href="{{url_for("static",filename="style.css")}}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
 </head>
 
-<body>
-  <h1>Iteration:&emsp;{{ iteration.counter }}</h1>
-  <h3>{{ iteration.start_to_end }}</h3>
-  <hr>
+<body class="pale_foreground">
+  <div class="container">
+    <h1 class="title is-1">Iteration:&emsp;{{ iteration.counter }}</h1>
+    <h2 class="subtitle is-4">{{ iteration.start_to_end }}</h2>
 
-  <div id="left">
-    <h2>Time spent this iteration</h2>
-    <table>
-      {% for week in iteration.weeks %}
-      <tr>
-        {% for day in week %}
-        <th>
-          {{ day.day_of_week }}<br />{{ day.day_and_month }}
-        </th>
-        {% endfor %}
-      </tr>
-      <tr>
-        {% for day in week %}
-        <td>
-          {% for sesh in iteration.study_sessions[day.date] %}
-          {{ sesh.start.strftime("%H:%M") }} - {{ sesh.end.strftime("%H:%M")}}<br />
-          {% endfor %}
-        </td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-    </table>
-    <p>Worked this iteration:<br />
-    Learning: {{ iteration.time_spent_per_goal["learning"] }} minutes<br />
-    Build: {{ iteration.time_spent_per_goal["build"] }} minutes<br />
-    Goal: {{ iteration.time_goal }}</p>
-    <form method="post">
-      <div class="form-el">
-        <label for="date">Session date:</label><br />
-        <input type="date" id="session_date" name="session_date"
-          value="{{iteration.todays_date.strftime("%Y-%m-%d")}}">
+    <!-- Goals section -->
+    <section class="section">
+      <div class="columns">
+        <div class="column">
+          <h3 class="title is-5">Goals</h3>
+          <div class="content">
+            <h4 class="subtitle is-6">Learning goal</h4>
+            <p>{{ iteration.learning_goal }}</p>
+          </div>
+        </div>
+        <div class="column">
+          <h3 class="title is-5">&nbsp;</h3>
+          <div class="content">
+            <h4 class="subtitle is-6">Build goal</h4>
+            <p>{{ iteration.build_goal }}</p>
+          </div>
+        </div>
       </div>
-      <div class="form-el">
-        <label for="goal_type">Goal:</label><br />
-        <input type="radio" id="learning" name="goal_type" value="learning">
-        <label for="learning">Learning</label><br />
-        <input type="radio" id="build" name="goal_type" value="build">
-        <label for="build">Build</label>
-      </div>
-      <div class="form-el">
-        <label for="start_time">Start time:</label><br />
-        <input type="time" id="start_time" name="start_time">
-      </div>
-      <div class="form-el">
-        <label for="end_time">End time:</label><br />
-        <input type="time" id="end_time" name="end_time">
-      </div>
-      <div class="form-el">
-        <br /><input type="submit" value="Submit">
-      </div>
-    </form>
-  </div>
+    </section>
 
-  <div id="right">
-    <h2>Learning goal</h2>
-    <p>{{ iteration.learning_goal }}</p>
-    <h2>Build goal</h2>
-    <p>{{ iteration.build_goal }}</p>
+    <!-- Time spent this iteration section -->
+    <section class="section">
+      <div class="columns">
+        <div class="column is-9">
+          <h3 class="title is-5">Time spent this iteration</h3>
+          <div class="content">
+            <h4 class="subtitle is-6">Calendar</h4>
+            <table>
+              {% for week in iteration.weeks %}
+              <tr>
+                {% for day in week %}
+                <th>
+                  {{ day.day_of_week }}<br />{{ day.day_and_month }}
+                </th>
+                {% endfor %}
+              </tr>
+              <tr>
+                {% for day in week %}
+                <td>
+                  {% for sesh in iteration.study_sessions[day.date] %}
+                  {{ sesh.start.strftime("%H:%M") }} - {{ sesh.end.strftime("%H:%M")}}<br />
+                  {% endfor %}
+                </td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+        <div class="column">
+          <h3 class="title is-5">&nbsp;</h3>
+          <div class="content">
+            <h4 class="subtitle is-6">Time stats</h4>
+            <p>Worked this iteration:<br />
+            Learning: {{ iteration.time_spent_per_goal["learning"] }} minutes<br />
+            Build: {{ iteration.time_spent_per_goal["build"] }} minutes<br />
+            Goal: {{ iteration.time_goal }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+	<section class="section">
+	  <h3 class="title is-5">Log a session</h3>
+	  <form method="post">
+		<div class="columns is-mobile">
+		  <div class="column">
+		    <div class="field">
+		      <label class="label">Session date</label>
+		      <div class="control">
+		        <input class="input" type="date" name="session_date"
+		         value="{{ iteration.todays_date }}">
+		      </div>
+		    </div>
+		  </div>
+		  <div class="column">
+		    <div class="field">
+		      <label class="label">Goal</label>
+		      <div class="control">
+		        <label class="radio">
+		          <input type="radio" name="goal_type" value="learning">
+		          Learning
+		        </label><br />
+		        <label class="radio">
+		          <input type="radio" name="goal_type" value="build">
+		          Build
+		        </label>
+		      </div>
+		    </div>
+		  </div>
+		  <div class="column">
+		    <div class="field">
+		      <label class="label">Start time</label>
+		      <div class="control">
+		        <input class="input" type="time" name="start_time">
+		      </div>
+		    </div>
+		  </div>
+		  <div class="column">
+		    <div class="field">
+		      <label class="label">End time</label>
+		      <div class="control">
+		        <input class="input" type="time" name="end_time">
+		      </div>
+		    </div>
+		  </div>
+		  <div class="column">
+		    <div class="field">
+		      <div class="control">
+		        <button class="button is-primary" type="submit">Submit</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	  </form>
+	</section>
+
   </div>
 </body>
 

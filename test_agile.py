@@ -126,3 +126,7 @@ class TestIteration(unittest.TestCase):
 
 class TestAgile(unittest.TestCase):
     pass
+
+
+if __name__ == "__main__":
+    unittest.main()

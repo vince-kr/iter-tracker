@@ -9,3 +9,4 @@ wwi.vim
 design.txt
 persistence/
 .idea
+.coverage
