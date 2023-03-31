@@ -15,9 +15,10 @@ class Agile:
         with open("./persistence/count") as c:
             new_iteration_data["counter"] = c.read()
         self.current_iteration = Iteration(new_iteration_data)
-        self.current_iteration.load_study_sessions_from_persistence(
-            iteration_data["study_sessions"]
-        )
+        if "study_sessions" in iteration_data:
+            self.current_iteration.load_study_sessions_from_persistence(
+                iteration_data["study_sessions"]
+            )
 
 
 class Iteration:
