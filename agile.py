@@ -1,4 +1,5 @@
 import collections
+from dataclasses import dataclass
 from datetime import date, time, timedelta
 import json
 
@@ -10,7 +11,12 @@ class Agile:
         new_iteration_data = {
             "first_day": date.fromisoformat(iteration_data["start"]),
             "duration": iteration_data["duration"],
-            "goals": iteration_data["goals"],
+            "goals": [
+                Goal(
+                    goal["title"], goal["description"], time_target=goal["time_target"]
+                )
+                for goal in iteration_data["goals"]
+            ],
         }
         with open("./persistence/count") as c:
             new_iteration_data["counter"] = c.read()
@@ -69,7 +75,7 @@ class Iteration:
     @property
     def weeks(self) -> list:
         """Return a list of weeks with each week a list of 7 days"""
-        return [self._days[fd : fd + 7] for fd in range(0, self._length_in_days, 7)]
+        return [self._days[fd: fd + 7] for fd in range(0, self._length_in_days, 7)]
 
     @property
     def study_sessions(self) -> object:
@@ -86,16 +92,8 @@ class Iteration:
         return time_spent
 
     @property
-    def time_goal(self) -> dict:
-        return self._goals["time_goal"]
-
-    @property
-    def learning_goal(self) -> dict:
-        return self._goals["learning_goal"]
-
-    @property
-    def build_goal(self) -> dict:
-        return self._goals["build_goal"]
+    def goals(self) -> list:
+        return self._goals
 
     # Interface to StudySessions logic
     def generate_new_study_session(self, *args) -> None:
@@ -124,7 +122,7 @@ class Iteration:
         return {
             "start": self._first_day.strftime("%Y-%m-%d"),
             "duration": self._length_in_days,
-            "goals": self._goals,
+            "goals": [str(goal) for goal in self._goals],
             "study_sessions": self._study_sessions.get_as_dict(),
         }
 
@@ -139,7 +137,7 @@ class StudySessions(collections.UserDict):
             "duration": self._calculate_session_duration(start, end),
         }
         if self._new_session_overlaps_existing(
-            day, new_session["start"], new_session["end"]
+                day, new_session["start"], new_session["end"]
         ):
             raise AttributeError
         self[day].append(new_session)
@@ -161,7 +159,7 @@ class StudySessions(collections.UserDict):
         return int(time_string[:2]), int(time_string[3:])
 
     def _new_session_overlaps_existing(
-        self, day: object, new_start: object, new_end: object
+            self, day: object, new_start: object, new_end: object
     ) -> bool:
         """Return True if a new session overlaps an existing one on the same day"""
         starts_in_existing = any(
@@ -188,3 +186,11 @@ class StudySessions(collections.UserDict):
                     }
                 )
         return study_sessions_dict
+
+
+@dataclass
+class Goal:
+    title: str
+    description: str
+    time_spent: int
+    time_target: int

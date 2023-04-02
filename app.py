@@ -17,11 +17,9 @@ def index():
             "weeks": iteration.weeks,
             "study_sessions": iteration.study_sessions,
             "time_spent_per_goal": iteration.time_spent_per_goal,
-            "time_goal": iteration.time_goal,
-            "learning_goal": iteration.learning_goal,
-            "build_goal": iteration.build_goal,
+            "goals": iteration.goals,
         }
-        return render_template("tracker_page", iteration=context)
+        return render_template("tracker_page", **context)
     else:  # it's POST
         date_of_session = date.fromisoformat(request.form["session_date"])
         session_data = (

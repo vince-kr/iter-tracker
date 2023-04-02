@@ -11,26 +11,20 @@
 
 <body class="pale_foreground">
   <div class="container">
-    <h1 class="title is-1">Iteration:&emsp;{{ iteration.counter }}</h1>
-    <h2 class="subtitle is-4">{{ iteration.start_to_end }}</h2>
+    <h1 class="title is-1">Iteration:&emsp;{{ counter }}</h1>
+    <h2 class="subtitle is-4">{{ start_to_end }}</h2>
 
     <!-- Goals section -->
     <section class="section">
       <div class="columns">
+        {% for goal in goals %}
         <div class="column">
-          <h3 class="title is-5">Goals</h3>
+          <h3 class="title is-5">{{ goal.title }}</h3>
           <div class="content">
-            <h4 class="subtitle is-6">Learning goal</h4>
-            <p>{{ iteration.learning_goal }}</p>
+            <p>{{ goal.description }}</p>
           </div>
         </div>
-        <div class="column">
-          <h3 class="title is-5">&nbsp;</h3>
-          <div class="content">
-            <h4 class="subtitle is-6">Build goal</h4>
-            <p>{{ iteration.build_goal }}</p>
-          </div>
-        </div>
+        {% endfor %}
       </div>
     </section>
 
@@ -42,7 +36,7 @@
           <div class="content">
             <h4 class="subtitle is-6">Calendar</h4>
             <table>
-              {% for week in iteration.weeks %}
+              {% for week in weeks %}
               <tr>
                 {% for day in week %}
                 <th>
@@ -53,7 +47,7 @@
               <tr>
                 {% for day in week %}
                 <td>
-                  {% for sesh in iteration.study_sessions[day.date] %}
+                  {% for sesh in study_sessions[day.date] %}
                   {{ sesh.start.strftime("%H:%M") }} - {{ sesh.end.strftime("%H:%M")}}<br />
                   {% endfor %}
                 </td>
@@ -68,9 +62,9 @@
           <div class="content">
             <h4 class="subtitle is-6">Time stats</h4>
             <p>Worked this iteration:<br />
-            Learning: {{ iteration.time_spent_per_goal["learning"] }} minutes<br />
-            Build: {{ iteration.time_spent_per_goal["build"] }} minutes<br />
-            Goal: {{ iteration.time_goal }}</p>
+            Learning: {{ time_spent_per_goal["learning"] }} minutes<br />
+            Build: {{ time_spent_per_goal["build"] }} minutes<br />
+            Goal: {{ time_goal }}</p>
           </div>
         </div>
       </div>
@@ -85,7 +79,7 @@
 		      <label class="label">Session date</label>
 		      <div class="control">
 		        <input class="input" type="date" name="session_date"
-		         value="{{ iteration.todays_date }}">
+		         value="{{ todays_date }}">
 		      </div>
 		    </div>
 		  </div>

@@ -1,25 +1,19 @@
 import unittest
 from datetime import date, timedelta
-from agile import Iteration
+from agile import Iteration, Goal
 
 
 class TestIteration(unittest.TestCase):
     def setUp(self):
         duration = 14
         first_day = date.fromisoformat("2023-03-04")
-        study_sessions = {
-            date.fromisoformat("2023-03-04") + timedelta(days=i): []
-            for i in range(duration)
-        }
         self.iter_data = {
             "duration": duration,
             "first_day": first_day,
-            "goals": {
-                "time_goal": "No time",
-                "learning_goal": "No learning",
-                "build_goal": "No build",
-            },
-            "study_sessions": study_sessions,
+            "goals": [
+                Goal("Learning goal", "No learning", 240),
+                Goal("Build goal", "No building", 360),
+            ],
             "counter": 3,
             "testing": True,
         }
@@ -67,15 +61,17 @@ class TestIteration(unittest.TestCase):
             self.it.generate_new_study_session(day, "learning", "20:00", "20:30")
 
     def test_iterationReturnsGoals(self):
-        self.iter_data["goals"][
-            "time_goal"
-        ] = "240 minutes learning / 360 minutes build"
-        self.iter_data["goals"]["learning_goal"] = "Some pages"
-        self.iter_data["goals"]["build_goal"] = "A cool app"
+        self.iter_data["goals"] = [
+            Goal("Learning goal", "Some pages", 240),
+            Goal("Build goal", "A cool app", 360),
+        ]
+        self.it.generate_new_study_session(
+            date.fromisoformat("2023-03-04"), "build", "20:30", "21:30"
+        )
         it = Iteration(self.iter_data)
-        self.assertEqual("240 minutes learning / 360 minutes build", it.time_goal)
-        self.assertEqual("Some pages", it.learning_goal)
-        self.assertEqual("A cool app", it.build_goal)
+        self.assertEqual(it.goals[0].title, "Learning goal")
+        self.assertEqual(it.goals[0].time_target, 240)
+        self.assertEqual(it.goals[0].time_spent, 60)
 
     def testIterationReturnsDictForPersistence(self):
         self.it.generate_new_study_session(
@@ -84,15 +80,15 @@ class TestIteration(unittest.TestCase):
         self.it.generate_new_study_session(
             date.fromisoformat("2023-03-06"), "learning", "14:00", "14:40"
         )
+        print(self.it.get_persistence_data())
         self.assertEqual(
             {
                 "start": "2023-03-04",
                 "duration": 14,
-                "goals": {
-                    "time_goal": "No time",
-                    "learning_goal": "No learning",
-                    "build_goal": "No build",
-                },
+                "goals": [
+                    "Goal(title='Learning goal', description='No learning', time_to_spend=240)",
+                    "Goal(title='Build goal', description='No building', time_to_spend=360)",
+                ],
                 "study_sessions": {
                     "2023-03-04": [
                         {
