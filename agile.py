@@ -1,30 +1,31 @@
 import collections
 from dataclasses import dataclass
 from datetime import date, time, timedelta
-import json
 
 
 class Agile:
     def __init__(self) -> None:
-        with open("./persistence/live.json") as iteration_data:
-            iteration_data = json.load(iteration_data)
-        new_iteration_data = {
-            "first_day": date.fromisoformat(iteration_data["start"]),
-            "duration": iteration_data["duration"],
-            "goals": [
-                Goal(
-                    goal["title"], goal["description"], time_target=goal["time_target"]
-                )
-                for goal in iteration_data["goals"]
-            ],
+        iteration_data = {
+            "first_day": date.fromisoformat("2023-04-01"),
+            "duration": 14,
+            "goals": {
+                "learning": Goal(
+                    "Learning goal",
+                    "3hrs studying Fluent Python (at least finish ch.5, which is 30 more pages); 1hr practicing TCR.",
+                    0,
+                    240
+                ),
+                "build": Goal(
+                    "Build goal",
+                    "I want to implement showing the progress on an iteration in terms of percentage of the time goal versus how much of the iteration has passed. I also want to keep working on the note transposing problem. Say 3hrs for Iteration-Tracker and 1hr on music.",
+                    0,
+                    240
+                ),
+            },
+            "study_sessions": StudySessions(),
+            "counter": 5,
         }
-        with open("./persistence/count") as c:
-            new_iteration_data["counter"] = c.read()
-        self.current_iteration = Iteration(new_iteration_data)
-        if "study_sessions" in iteration_data:
-            self.current_iteration.load_study_sessions_from_persistence(
-                iteration_data["study_sessions"]
-            )
+        self.current_iteration = Iteration(iteration_data)
 
 
 class Iteration:
@@ -36,8 +37,7 @@ class Iteration:
         self._last_day = self._days[-1]["date"]
         self._goals = it_da["goals"]
         self._counter = it_da["counter"]
-        self._testing = "testing" in it_da and it_da["testing"]
-        self._study_sessions = StudySessions({day["date"]: [] for day in self._days})
+        self._study_sessions = it_da["study_sessions"]
 
     def _get_list_of_days(self) -> list:
         """Return a list of Day objects for each day of the iteration"""
@@ -83,15 +83,6 @@ class Iteration:
         return self._study_sessions
 
     @property
-    def time_spent_per_goal(self) -> dict:
-        """Return time spent for both learning and build goals"""
-        time_spent = {"learning": 0, "build": 0}
-        for day in self._study_sessions.values():
-            for sesh in day:
-                time_spent[sesh["goal"]] += sesh["duration"]
-        return time_spent
-
-    @property
     def goals(self) -> list:
         return self._goals
 
@@ -100,9 +91,6 @@ class Iteration:
         """Pass arguments on to the appropriate StudySessions method,
         then run persistence"""
         self._study_sessions.generate_new(*args)
-        if not self._testing:
-            with open("./persistence/live.json", "w") as iteration_data:
-                json.dump(self.get_persistence_data(), iteration_data, indent=2)
 
     def load_study_sessions_from_persistence(self, study_sessions: dict) -> None:
         """Create a new study sessions dict using data from persistence"""
@@ -116,22 +104,13 @@ class Iteration:
                 )
                 self._study_sessions.generate_new(*session_data)
 
-    # Persistence logic
-    def get_persistence_data(self) -> dict:
-        """Prepare a dict for JSON-ification"""
-        return {
-            "start": self._first_day.strftime("%Y-%m-%d"),
-            "duration": self._length_in_days,
-            "goals": [str(goal) for goal in self._goals],
-            "study_sessions": self._study_sessions.get_as_dict(),
-        }
 
-
-class StudySessions(collections.UserDict):
+class StudySessions(collections.UserList):
     def generate_new(self, day: object, goal: str, start: str, end: str) -> None:
-        """Add a new study session - this should become __setitem__ at some point"""
+        """Add a new study session"""
         new_session = {
             "goal": goal,
+            "date": day,
             "start": self._string_to_time_obj(start),
             "end": self._string_to_time_obj(end),
             "duration": self._calculate_session_duration(start, end),
@@ -140,7 +119,7 @@ class StudySessions(collections.UserDict):
                 day, new_session["start"], new_session["end"]
         ):
             raise AttributeError
-        self[day].append(new_session)
+        self.append(new_session)
 
     # noinspection PyMethodMayBeStatic
     def _string_to_time_obj(self, time_string: str) -> object:
@@ -162,11 +141,13 @@ class StudySessions(collections.UserDict):
             self, day: object, new_start: object, new_end: object
     ) -> bool:
         """Return True if a new session overlaps an existing one on the same day"""
+        print(self)
+        sessions_on_same_day = [sesh for sesh in self if sesh["date"] == day]
         starts_in_existing = any(
-            [es["start"] <= new_start < es["end"] for es in self.data[day]]
+            [es["start"] <= new_start < es["end"] for es in sessions_on_same_day]
         )
         ends_in_existing = any(
-            [es["start"] < new_end <= es["end"] for es in self.data[day]]
+            [es["start"] < new_end <= es["end"] for es in sessions_on_same_day]
         )
         return starts_in_existing or ends_in_existing
 
@@ -192,5 +173,23 @@ class StudySessions(collections.UserDict):
 class Goal:
     title: str
     description: str
-    time_spent: int
-    time_target: int
+    _time_spent: int
+    _time_target: int
+
+    @property
+    def time_spent(self) -> str:
+        return self._time_as_string(self._time_spent)
+
+    @property
+    def time_target(self) -> str:
+        return self._time_as_string(self._time_target)
+
+    @property
+    def achieved(self) -> str:
+        perc = self._time_spent / self._time_target * 100
+        return f"{perc:.2f}"
+
+    def _time_as_string(self, time_in_mins: int) -> str:
+        hrs = time_in_mins // 60
+        mins = time_in_mins % 60
+        return f"{hrs:02d}" + ":" + f"{mins:02d}"

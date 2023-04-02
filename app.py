@@ -16,7 +16,6 @@ def index():
             "start_to_end": iteration.start_to_end,
             "weeks": iteration.weeks,
             "study_sessions": iteration.study_sessions,
-            "time_spent_per_goal": iteration.time_spent_per_goal,
             "goals": iteration.goals,
         }
         return render_template("tracker_page", **context)
@@ -33,7 +32,7 @@ def index():
 
 
 def add_study_session_to_current_iteration(
-    iteration: object, session_data: tuple
+        iteration: object, session_data: tuple
 ) -> None:
     try:
         iteration.generate_new_study_session(*session_data)
