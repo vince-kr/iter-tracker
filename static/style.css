@@ -1,0 +1,63 @@
+body {
+  margin: 0;
+  padding: 2rem;
+  font: 1rem sans-serif;
+}
+
+h1 {
+  text-align: right;
+  font: small-caps 18px monospace;
+}
+
+h2 {
+  width: 70%;
+  padding-bottom: .5rem;
+  font-size: 1.3rem;
+  border-bottom: 2px solid black;
+}
+
+#goals, #log {
+  width: 96%;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.left, .right {
+  flex: 1;
+  min-width: 300px;
+}
+
+.goal-description {
+  padding: 0 10px;
+}
+
+.timeline {
+  font: 1.25rem monospace;
+}
+
+form {
+  width: 100%;
+  line-height: 160%;
+}
+
+#form-fields {
+}
+
+#form-fields>* {
+  width: 40%;
+}
+
+.floaties {
+  width: 100%;
+  display: flex;
+  gap: .4rem;
+}
+
+.floaty {
+  width: 3rem;
+  height: 3rem;
+  background-color: #eee;
+  border-radius: 1rem;
+}
