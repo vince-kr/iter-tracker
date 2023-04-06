@@ -1,64 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iteration tracker</title>
-  <link rel="stylesheet" href="{{url_for("static", filename="style.css")}}">
+  <link rel="stylesheet" href="{{url_for("static", filename="style.css" )}}">
 </head>
+
 <body>
-    <h1>iteration 5</h1>
+  <h1>iteration 5</h1>
 
-    <section id="goals">
-      <div class="left">
-        <h2>Learning goal</h2>
-        <div class="goal-description">
-          <p>{{ learning.description }}</p>
-        </div>
-        <p class="timeline">{{ learning.time_spent }} / {{ learning.time_target }} ({{ learning.percentage_of_target }})</p>
+  <section id="goals">
+    <div class="left">
+      <h2>Learning goal</h2>
+      <div class="goal-description">
+        <p>{{ learning.description }}</p>
       </div>
-      <div class="right">
-        <h2 class="subtitle">Build goal</h2>
-        <div class="goal-description">
-          <p>{{ building.description }}</p>
-        </div>
-        <p class="timeline">{{ building.time_spent }} / {{ building.time_target }} ({{ building.percentage_of_target }})</p>
+      <p class="timeline">{{ learning.time_spent }} / {{ learning.time_target }} ({{ learning.spent_over_target }})
+      </p>
+    </div>
+    <div class="right">
+      <h2 class="subtitle">Build goal</h2>
+      <div class="goal-description">
+        <p>{{ building.description }}</p>
       </div>
-    </section>
+      <p class="timeline">{{ building.time_spent }} / {{ building.time_target }} ({{ building.spent_over_target }})
+      </p>
+    </div>
+  </section>
 
-    <section id="log">
-      <div class="left">
-        <h2 class="subtitle">Log a session</h2>
-        <form method="post">
-          <div id="form-fields">
-            <label for="date">Date</label>
-            <input type="date" name="date" id="date"><br />
-            <label for="start-time">Start</label>
-            <input type="time" name="start-time" id="start-time"><br />
-            <label for="end-time">End</label>
-            <input type="time" name="end-time" id="end-time"><br />
-          </div>
-        </form>
-      </div>
-      <div class="right">
-        <h2 class="subtitle">Days worked</h2>
-        {% for week in weeks %}
-        <div class="floaties">
-          {% for day in week %}
-          <div class="floaty">&nbsp;</div>
-          {% endfor %}
+  <section id="log">
+    <div class="left">
+      <h2 class="subtitle">Log a session</h2>
+      <form method="post">
+        <div id="form-fields">
+          <label for="date">Date</label>
+          <input type="date" name="date" id="date"><br />
+          <input type="radio" name="goal_type" id="learning" value="learning">
+          <label for="learning">Learning goal</label>
+          <input type="radio" name="goal_type" id="building" value="building">
+          <label for="building">Build goal</label><br />
+          <label for="start-time">Start</label>
+          <input type="time" name="start-time" id="start-time"><br />
+          <label for="end-time">End</label>
+          <input type="time" name="end-time" id="end-time"><br />
+          <input type="submit" value="Submit">
         </div>
-        <br />
+      </form>
+    </div>
+    <div class="right">
+      <h2 class="subtitle">Days worked</h2>
+      {% for week in weeks %}
+      <div class="floaties">
+        {% for day in week %}
+        <div class="floaty">&nbsp;</div>
         {% endfor %}
       </div>
-    </section>
+      <br />
+      {% endfor %}
+    </div>
+  </section>
 
-    <footer class="footer">
-      <div class="content has-text-centered">
-        <p>&copy; 2023 Vince</p>
-      </div>
-    </footer>
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>&copy; 2023 Vince</p>
+    </div>
+  </footer>
 
   </div>
 </body>
+
 </html>
