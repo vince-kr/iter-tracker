@@ -17,7 +17,7 @@
       <div class="goal-description">
         <p>{{ learning.description }}</p>
       </div>
-      <p class="timeline">{{ learning.time_spent }} / {{ learning.time_target }} ({{ learning.spent_over_target }})
+      <p class="timeline">{{ learning.time_spent }} / {{ learning.time_target }} ({{ learning.spent_as_percentage }})
       </p>
     </div>
     <div class="right">
@@ -25,7 +25,7 @@
       <div class="goal-description">
         <p>{{ building.description }}</p>
       </div>
-      <p class="timeline">{{ building.time_spent }} / {{ building.time_target }} ({{ building.spent_over_target }})
+      <p class="timeline">{{ building.time_spent }} / {{ building.time_target }} ({{ building.spent_as_percentage }})
       </p>
     </div>
   </section>
@@ -42,9 +42,9 @@
           <input type="radio" name="goal_type" id="building" value="building">
           <label for="building">Build goal</label><br />
           <label for="start-time">Start</label>
-          <input type="time" name="start-time" id="start-time"><br />
+          <input type="time" name="start_time" id="start-time"><br />
           <label for="end-time">End</label>
-          <input type="time" name="end-time" id="end-time"><br />
+          <input type="time" name="end_time" id="end-time"><br />
           <input type="submit" value="Submit">
         </div>
       </form>
@@ -52,9 +52,9 @@
     <div class="right">
       <h2 class="subtitle">Days worked</h2>
       {% for week in weeks %}
-      <div class="floaties">
+      <div class="week-row">
         {% for day in week %}
-        <div class="floaty">&nbsp;</div>
+        <div class="{{day.worked}}">&nbsp;</div>
         {% endfor %}
       </div>
       <br />

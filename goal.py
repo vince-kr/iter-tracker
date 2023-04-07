@@ -18,7 +18,7 @@ class Goal:
         return self._format_time_string(self._minutes_spent)
 
     @time_spent.setter
-    def minutes_spent(self, value: int) -> None:
+    def time_spent(self, value: int) -> None:
         self._minutes_spent += value
 
     @property

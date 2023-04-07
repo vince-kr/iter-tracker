@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, request, render_template, url_for, redirect
 from agile import Iteration
 
 app = Flask(__name__)
@@ -19,15 +19,29 @@ it = Iteration(
 )
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    context = {
-        "weeks": [
-            list(range(7)),
-            list(range(7)),
-        ],
-    }
-    context["count"] = it.count
-    context["learning"] = it.learning
-    context["building"] = it.building
-    return render_template("tracker_page", **context)
+    if request.method == "GET":
+        context = {
+            "weeks": [
+                [{"worked": "day_break"} for i in range(7)],
+                [{"worked": "day_break"} for i in range(7)],
+            ],
+        }
+        context["count"] = it.count
+        context["learning"] = it.learning
+        context["building"] = it.building
+        return render_template("tracker_page", **context)
+    else:  # it's POST
+        session_data = (
+            request.form["date"],
+            request.form["goal_type"],
+            request.form["start_time"],
+            request.form["end_time"],
+        )
+        record_study_session(session_data, it)
+        return redirect(url_for("index"))
+
+
+def record_study_session(session_data: tuple, iteration: object) -> None:
+    iteration.record_study_session(*session_data)

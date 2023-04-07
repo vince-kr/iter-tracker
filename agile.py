@@ -18,7 +18,8 @@ class Iteration:
     def record_study_session(
         self, date: str, goal_type: str, start: str, end: str
     ) -> None:
-        self.goals[goal_type].minutes_spent = self._get_session_duration(start, end)
+        session_duration = self._get_session_duration(start, end)
+        self.goals[goal_type].time_spent = session_duration
 
     def _get_session_duration(self, start: str, end: str) -> int:
         start_hr, start_min = int(start[:2]), int(start[3:])
