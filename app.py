@@ -5,15 +5,17 @@ app = Flask(__name__)
 
 
 it = Iteration(
-    count=5,
-    learning={
-        "description": "3hrs studying Fluent Python (at least finish ch.5, which is 30 more pages); 1hr practicing TCR.",
-        "time_target": 240,
-    },
-    building={
-        "description": "I want to implement showing the progress on an iteration in terms of percentage of the time goal versus how much of the iteration has passed. I also want to keep working on the note transposing problem. Say 3hrs for Iteration-Tracker and 1hr on music.",
-        "time_target": 270,
-    },
+    5,
+    (
+        "3hrs studying Fluent Python (at least finish ch.5, which is 30 more pages); 1hr practicing TCR.",
+        240,
+        0,
+    ),
+    (
+        "I want to implement showing the progress on an iteration in terms of percentage of the time goal versus how much of the iteration has passed. I also want to keep working on the note transposing problem. Say 3hrs for Iteration-Tracker and 1hr on music.",
+        270,
+        0,
+    ),
 )
 
 
