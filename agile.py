@@ -1,6 +1,5 @@
 from goal import Goal
 from days import Days
-from datetime import timedelta
 
 
 class Iteration:
@@ -26,9 +25,8 @@ class Iteration:
     def record_study_session(
         self, date: str, goal_type: str, start: str, end: str
     ) -> None:
-        session_duration = self._get_session_duration(start, end)
-        self._goals[goal_type].time_spent = session_duration
         self._days[date] = "day_worked"
+        self._goals[goal_type].time_spent = self._get_session_duration(start, end)
 
     def _get_session_duration(self, start: str, end: str) -> int:
         start_hr, start_min = int(start[:2]), int(start[3:])

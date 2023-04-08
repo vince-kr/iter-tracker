@@ -25,15 +25,11 @@ it = Iteration(
 def index():
     if request.method == "GET":
         context = {
-            "weeks": [
-                ["day_break" for i in range(7)],
-                ["day_break" for i in range(7)],
-            ],
+            "count": it.count,
+            "weeks": it.weeks,
+            "learning": it.learning,
+            "building": it.building,
         }
-        context["count"] = it.count
-        context["weeks"] = it.weeks
-        context["learning"] = it.learning
-        context["building"] = it.building
         return render_template("tracker_page", **context)
     else:  # it's POST
         session_data = (
