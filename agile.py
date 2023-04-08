@@ -11,6 +11,10 @@ class Iteration:
         self._goals = {"learning": Goal(*learning), "building": Goal(*building)}
 
     @property
+    def daterange(self) -> str:
+        return self._days.daterange_as_string()
+
+    @property
     def learning(self) -> object:
         return self._goals["learning"]
 

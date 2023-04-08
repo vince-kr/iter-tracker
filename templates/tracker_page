@@ -9,7 +9,8 @@
 </head>
 
 <body>
-  <h1>iteration 5</h1>
+  <h1>iteration {{count}}</h1>
+  <h1>{{daterange}}</h1>
 
   <section id="goals">
     <div class="left">

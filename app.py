@@ -26,6 +26,7 @@ def index():
     if request.method == "GET":
         context = {
             "count": it.count,
+            "daterange": it.daterange,
             "weeks": it.weeks,
             "learning": it.learning,
             "building": it.building,
