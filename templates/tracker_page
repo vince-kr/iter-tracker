@@ -54,7 +54,7 @@
       {% for week in weeks %}
       <div class="week-row">
         {% for day in week %}
-        <div class="{{day.worked}}">&nbsp;</div>
+        <div class="{{day}}">&nbsp;</div>
         {% endfor %}
       </div>
       <br />

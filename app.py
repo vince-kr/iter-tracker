@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, url_for, redirect
+from datetime import date
 from agile import Iteration
 
 app = Flask(__name__)
@@ -6,6 +7,7 @@ app = Flask(__name__)
 
 it = Iteration(
     5,
+    date.fromisoformat("2023-04-01"),
     (
         "3hrs studying Fluent Python (at least finish ch.5, which is 30 more pages); 1hr practicing TCR.",
         240,
@@ -29,6 +31,7 @@ def index():
             ],
         }
         context["count"] = it.count
+        context["weeks"] = it.weeks
         context["learning"] = it.learning
         context["building"] = it.building
         return render_template("tracker_page", **context)
