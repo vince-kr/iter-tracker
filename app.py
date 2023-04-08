@@ -24,8 +24,8 @@ def index():
     if request.method == "GET":
         context = {
             "weeks": [
-                [{"worked": "day_break"} for i in range(7)],
-                [{"worked": "day_break"} for i in range(7)],
+                ["day_break" for i in range(7)],
+                ["day_break" for i in range(7)],
             ],
         }
         context["count"] = it.count
