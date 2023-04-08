@@ -11,16 +11,19 @@ class TestIteration(object):
         learning=(
             "My Learning Goal",
             240,  # 04:00
-            0,
         ),
         building=(
             "My Building Goal",
             270,  # 04:30
-            0,
         ),
+        study_sessions=[],
     ):
         return Iteration(
-            count=count, start_date=start_date, learning=learning, building=building
+            count=count,
+            start_date=start_date,
+            learning=learning,
+            building=building,
+            study_sessions=study_sessions,
         )
 
     def test_iterationReturnsCurrentCount(self):
@@ -30,8 +33,8 @@ class TestIteration(object):
     def test_iterationReturnsDaterangeAsString(self):
         it = self.set_up()
         assert it.daterange == "April 1 - 14"
-        # it = self.set_up(start_date=date.fromisoformat("2023-03-25"))
-        # assert it.daterange == "March 25 - April 7"
+        it = self.set_up(start_date=date.fromisoformat("2023-03-25"))
+        assert it.daterange == "March 25 - April 7"
 
     def test_iterationReturnsGoalProperties(self):
         it = self.set_up()
@@ -59,6 +62,28 @@ class TestIteration(object):
         it.record_study_session(**new_sesh)
         assert it.learning.time_spent == "01:25"
         assert it.learning.spent_as_percentage == "35.42%"
+        assert it.weeks[0] == [
+            "day_break",
+            "day_worked",
+            "day_break",
+            "day_break",
+            "day_break",
+            "day_break",
+            "day_break",
+        ]
+
+    def test_iterationGetsInstantiatedWithStudySessions(self):
+        it = self.set_up(
+            study_sessions=[
+                {
+                    "date": "2023-04-02",  # second day of the iteration
+                    "goal_type": "learning",
+                    "start": "20:15",
+                    "end": "21:40",
+                }
+            ]
+        )
+        assert it.learning.time_spent == "01:25"
         assert it.weeks[0] == [
             "day_break",
             "day_worked",
