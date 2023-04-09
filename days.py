@@ -22,11 +22,13 @@ class Days(UserDict):
         return self._first_day.strftime("%Y-%m-%d")
 
     def daterange_as_string(self):
-        daterange_spans_months = self._first_day.strftime(
-            "%B"
-        ) != self._last_day.strftime("%B")
+        # fmt: off
+        iteration_spans_multiple_months = (
+            self._first_day.strftime("%B") != self._last_day.strftime("%B")
+        )
+        # fmt: on
         start = self._first_day.strftime("%B %-d")
-        if daterange_spans_months:
+        if iteration_spans_multiple_months:
             end = self._last_day.strftime("%B %-d")
         else:
             end = self._last_day.strftime("%-d")

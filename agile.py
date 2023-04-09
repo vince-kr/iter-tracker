@@ -27,11 +27,6 @@ class Iteration:
         for session in self._study_sessions:
             self.record_study_session(**session)
 
-    @property
-    def weeks(self) -> list:
-        """Return the iteration's days as a list of two lists of 7 days each"""
-        return self._days.by_weeks
-
     def record_study_session(
         self, date: str, goal_type: str, start: str, end: str
     ) -> None:
@@ -45,6 +40,11 @@ class Iteration:
         start_hr, start_min = int(start[:2]), int(start[3:])
         end_hr, end_min = int(end[:2]), int(end[3:])
         return (end_hr - start_hr) * 60 + end_min - start_min
+
+    @property
+    def weeks(self) -> list:
+        """Return the iteration's days as a list of two lists of 7 days each"""
+        return self._days.by_weeks
 
     @property
     def as_dict(self) -> dict:

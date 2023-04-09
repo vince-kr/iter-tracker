@@ -1,6 +1,3 @@
-from collections import UserDict
-
-
 class Goal:
     def __init__(
         self, description: str, target_in_minutes: int, minutes_spent: int = 0
@@ -27,7 +24,7 @@ class Goal:
 
     @property
     def construction_data(self) -> dict:
-        """Return dict of data to rebuild this goal object"""
+        """Return dict of description & target to rebuild this goal object"""
         return {
             "description": self.description,
             "target_in_minutes": self._target_in_minutes,

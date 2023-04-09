@@ -1,6 +1,5 @@
 import pytest
 from agile import Iteration, iteration_factory
-from datetime import date
 
 
 class TestIterationFactory(object):
@@ -40,14 +39,6 @@ class TestIteration(object):
         it = self.set_up(start_date="2023-03-25")
         assert it.daterange == "March 25 - April 7"
 
-    def test_iterationReturnsGoalProperties(self):
-        it = self.set_up()
-        assert it.learning.description == "My Learning Goal"
-        assert it.learning.time_target == "04:00"
-        assert it.building.time_target == "04:30"
-        assert it.learning.time_spent == "00:00"
-        assert it.building.spent_as_percentage == "0.00%"
-
     def test_iterationKnowsAboutWeeks(self):
         it = self.set_up()
         assert it.weeks == [
@@ -55,22 +46,38 @@ class TestIteration(object):
             ["day_break"] * 7,
         ]
 
-    def test_iterationCanRegisterStudySessions(self):
+    def test_iterationReturnsGoalProperties(self):
         it = self.set_up()
-        new_sesh = {
+        assert it.learning.description == "My Learning Goal"
+        assert it.building.description == "My Building Goal"
+        assert it.learning.time_target == "04:00"
+        assert it.building.time_target == "04:30"
+
+    def test_afterRecordingStudySession_IterationIncreasesTimeSpentOnGoals(self):
+        it = self.set_up()
+        learning_sesh = {
             "date": "2023-04-02",  # second day of the iteration
             "goal_type": "learning",
             "start": "20:15",
             "end": "21:40",
         }
-        it.record_study_session(**new_sesh)
+        building_sesh = {
+            "date": "2023-04-04",  # fourth day of the iteration
+            "goal_type": "building",
+            "start": "20:00",
+            "end": "20:45",
+        }
+        it.record_study_session(**learning_sesh)
+        it.record_study_session(**building_sesh)
         assert it.learning.time_spent == "01:25"
         assert it.learning.spent_as_percentage == "35.42%"
+        assert it.building.time_spent == "00:45"
+        assert it.building.spent_as_percentage == "16.67%"
         assert it.weeks[0] == [
             "day_break",
             "day_worked",
             "day_break",
-            "day_break",
+            "day_worked",
             "day_break",
             "day_break",
             "day_break",
@@ -84,15 +91,22 @@ class TestIteration(object):
                     "goal_type": "learning",
                     "start": "20:15",
                     "end": "21:40",
-                }
+                },
+                {
+                    "date": "2023-04-04",  # fourth day of the iteration
+                    "goal_type": "building",
+                    "start": "20:00",
+                    "end": "20:45",
+                },
             ]
         )
         assert it.learning.time_spent == "01:25"
+        assert it.building.time_spent == "00:45"
         assert it.weeks[0] == [
             "day_break",
             "day_worked",
             "day_break",
-            "day_break",
+            "day_worked",
             "day_break",
             "day_break",
             "day_break",
