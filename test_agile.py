@@ -1,21 +1,25 @@
 import pytest
-from agile import Iteration
+from agile import Iteration, iteration_factory
 from datetime import date
+
+
+class TestIterationFactory(object):
+    assert isinstance(iteration_factory(), Iteration)
 
 
 class TestIteration(object):
     def set_up(
         self,
         count=5,
-        start_date=date.fromisoformat("2023-04-01"),
-        learning=(
-            "My Learning Goal",
-            240,  # 04:00
-        ),
-        building=(
-            "My Building Goal",
-            270,  # 04:30
-        ),
+        start_date="2023-04-01",
+        learning={
+            "description": "My Learning Goal",
+            "target_in_minutes": 240,  # 04:00
+        },
+        building={
+            "description": "My Building Goal",
+            "target_in_minutes": 270,  # 04:30
+        },
         study_sessions=[],
     ):
         return Iteration(
@@ -33,7 +37,7 @@ class TestIteration(object):
     def test_iterationReturnsDaterangeAsString(self):
         it = self.set_up()
         assert it.daterange == "April 1 - 14"
-        it = self.set_up(start_date=date.fromisoformat("2023-03-25"))
+        it = self.set_up(start_date="2023-03-25")
         assert it.daterange == "March 25 - April 7"
 
     def test_iterationReturnsGoalProperties(self):
@@ -93,3 +97,19 @@ class TestIteration(object):
             "day_break",
             "day_break",
         ]
+
+    def test_iterationReturnsJSONifiableDictOfItself(self):
+        it = self.set_up()
+        assert it.as_dict == {
+            "count": 5,
+            "start_date": "2023-04-01",
+            "learning": {
+                "description": "My Learning Goal",
+                "target_in_minutes": 240,
+            },
+            "building": {
+                "description": "My Building Goal",
+                "target_in_minutes": 270,
+            },
+            "study_sessions": [],
+        }

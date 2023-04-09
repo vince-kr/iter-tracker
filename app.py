@@ -1,23 +1,11 @@
 from flask import Flask, request, render_template, url_for, redirect
 from datetime import date
-from agile import Iteration
+from agile import iteration_factory
 
 app = Flask(__name__)
 
 
-it = Iteration(
-    5,
-    date.fromisoformat("2023-04-01"),
-    (
-        "3hrs studying Fluent Python (at least finish ch.5, which is 30 more pages); 1hr practicing TCR.",
-        240,
-    ),
-    (
-        "I want to implement showing the progress on an iteration in terms of percentage of the time goal versus how much of the iteration has passed. I also want to keep working on the note transposing problem. Say 3hrs for Iteration-Tracker and 1hr on music.",
-        270,
-    ),
-    [],
-)
+it = iteration_factory()
 
 
 @app.route("/", methods=["GET", "POST"])

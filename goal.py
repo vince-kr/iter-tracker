@@ -25,6 +25,14 @@ class Goal:
         as_perc = self._minutes_spent / self._target_in_minutes * 100
         return f"{as_perc:.2f}%"
 
+    @property
+    def construction_data(self) -> dict:
+        """Return dict of data to rebuild this goal object"""
+        return {
+            "description": self.description,
+            "target_in_minutes": self._target_in_minutes,
+        }
+
     def _format_time_string(self, minutes) -> str:
         """Return hh:mm string from integer of minutes"""
         hrs = minutes // 60

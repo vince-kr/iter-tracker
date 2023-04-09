@@ -17,6 +17,10 @@ class Days(UserDict):
         values = [val[1] for val in sorted_tuples]
         return [values[:7], values[7:]]
 
+    @property
+    def first_day(self) -> str:
+        return self._first_day.strftime("%Y-%m-%d")
+
     def daterange_as_string(self):
         daterange_spans_months = self._first_day.strftime(
             "%B"
