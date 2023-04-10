@@ -1,23 +1,14 @@
 from flask import Flask, request, render_template, url_for, redirect
-from datetime import date
-from agile import iteration_factory
+from committable import get_context
 
 app = Flask(__name__)
-
-
-it = iteration_factory()
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "GET":
-        context = {
-            "count": it.count,
-            "daterange": it.daterange,
-            "weeks": it.weeks,
-            "learning": it.learning,
-            "building": it.building,
-        }
+        template_fields = ("count", "daterange", "weeks", "learning", "building")
+        context = get_context(template_fields)
         return render_template("tracker_page", **context)
     else:  # it's POST
         session_data = (
@@ -26,9 +17,9 @@ def index():
             request.form["start_time"],
             request.form["end_time"],
         )
-        record_study_session(session_data, it)
+        record_study_session(it, session_data)
         return redirect(url_for("index"))
 
 
-def record_study_session(session_data: tuple, iteration: object) -> None:
+def record_study_session(iteration: object, session_data: tuple) -> None:
     iteration.record_study_session(*session_data)

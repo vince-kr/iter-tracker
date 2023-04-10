@@ -1,9 +1,11 @@
 from datetime import date
-from goal import Goal
-from days import Days
+from collections import UserDict
+from .persistence import Persistence
+from .goal import Goal
+from .days import Days
 
 
-class Iteration:
+class Iteration(UserDict):
     """Provides all fields required by the UI"""
 
     def __init__(
@@ -14,18 +16,19 @@ class Iteration:
         building: dict,
         study_sessions: list[dict],
     ) -> None:
-        self.count = count
-
         self._days = Days(date.fromisoformat(start_date))
-        self.daterange = self._days.daterange_as_string()
-
         self._goals = {"learning": Goal(**learning), "building": Goal(**building)}
-        self.learning = self._goals["learning"]
-        self.building = self._goals["building"]
 
         self._study_sessions = study_sessions
         for session in self._study_sessions:
             self.record_study_session(**session)
+
+        self.data = {}
+        self.data["count"] = count
+        self.data["daterange"] = self._days.daterange_as_string()
+        self.data["weeks"] = self._days.by_weeks
+        self.data["learning"] = self._goals["learning"]
+        self.data["building"] = self._goals["building"]
 
     def record_study_session(
         self, date: str, goal_type: str, start: str, end: str
@@ -42,34 +45,18 @@ class Iteration:
         return (end_hr - start_hr) * 60 + end_min - start_min
 
     @property
-    def weeks(self) -> list:
-        """Return the iteration's days as a list of two lists of 7 days each"""
-        return self._days.by_weeks
-
-    @property
     def as_dict(self) -> dict:
         """Return a JSON-ifiable dictionary of data needed to rebuild Iteration object"""
         return {
-            "count": self.count,
+            "count": self.data["count"],
             "start_date": self._days.first_day,
-            "learning": self.learning.construction_data,
-            "building": self.building.construction_data,
+            "learning": self["learning"].construction_data,
+            "building": self["building"].construction_data,
             "study_sessions": self._study_sessions,
         }
 
 
-def iteration_factory():
-    """Toy implementation with hardcoded values of an Iteration factory"""
-    return Iteration(
-        5,
-        "2023-04-01",
-        {
-            "description": "3hrs studying Fluent Python (at least finish ch.5, which is 30 more pages); 1hr practicing TCR.",
-            "target_in_minutes": 240,
-        },
-        {
-            "description": "I want to implement showing the progress on an iteration in terms of percentage of the time goal versus how much of the iteration has passed. I also want to keep working on the note transposing problem. Say 3hrs for Iteration-Tracker and 1hr on music.",
-            "target_in_minutes": 270,
-        },
-        [],
-    )
+def get_context(template_fields: tuple) -> None:
+    iteration_data = Persistence.read()
+    iteration = Iteration(*iteration_data)
+    return {field_name: iteration[field_name] for field_name in template_fields}
