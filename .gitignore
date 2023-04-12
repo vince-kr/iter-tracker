@@ -11,3 +11,4 @@ persistence/
 .idea
 .coverage
 tnc.sh
+*egg-info
