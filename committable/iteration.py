@@ -56,7 +56,7 @@ class Iteration(UserDict):
         }
 
 
-def get_context(template_fields: tuple) -> None:
-    iteration_data = Persistence.read()
+def get_context(template_fields: tuple, testing=False) -> None:
+    iteration_data = Persistence.read("path")
     iteration = Iteration(*iteration_data)
     return {field_name: iteration[field_name] for field_name in template_fields}

@@ -1,5 +1,5 @@
 class Persistence:
-    def read() -> tuple:
+    def read(db_path: str) -> tuple:
         return (
             5,
             "2023-04-01",

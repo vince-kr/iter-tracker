@@ -1,5 +1,10 @@
 import pytest
-from committable.iteration import Iteration
+from committable.iteration import Iteration, get_context
+
+
+class TestContextGetter(object):
+    template_fields = ("count", "daterange", "weeks", "learning", "building")
+    context = get_context(template_fields)
 
 
 class TestIteration(object):
