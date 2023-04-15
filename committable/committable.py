@@ -59,5 +59,5 @@ class Iteration(UserDict):
 
 def get_context(template_fields: tuple, testing=False) -> None:
     iteration_data = Persistence.read(current_iteration_path)
-    iteration = Iteration(*iteration_data)
+    iteration = Iteration(**iteration_data)
     return {field_name: iteration[field_name] for field_name in template_fields}

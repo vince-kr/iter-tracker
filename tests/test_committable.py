@@ -1,5 +1,5 @@
 import pytest
-from committable.iteration import Iteration, get_context
+from committable.committable import Iteration, get_context
 
 
 class TestContextGetter(object):
