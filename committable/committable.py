@@ -61,3 +61,10 @@ def get_context(template_fields: tuple, testing=False) -> None:
     iteration_data = Persistence.read(current_iteration_path)
     iteration = Iteration(**iteration_data)
     return {field_name: iteration[field_name] for field_name in template_fields}
+
+
+def record_study_session(session_data: dict) -> None:
+    current_iteration = Persistence.read(current_iteration_path)
+    current_iteration["study_sessions"].append(session_data)
+    error = Persistence.write(current_iteration_path, current_iteration)
+    return error

@@ -1,7 +1,7 @@
 import json
 from os import path
 from flask import Flask, request, render_template, url_for, redirect
-from committable.committable import get_context
+from committable.committable import get_context, record_study_session
 
 app = Flask(__name__)
 
@@ -13,15 +13,5 @@ def index():
         context = get_context(template_fields)
         return render_template("tracker_page", **context)
     else:  # it's POST
-        session_data = (
-            request.form["date"],
-            request.form["goal_type"],
-            request.form["start_time"],
-            request.form["end_time"],
-        )
-        record_study_session(it, session_data)
+        record_study_session(request.form)
         return redirect(url_for("index"))
-
-
-def record_study_session(iteration: object, session_data: tuple) -> None:
-    iteration.record_study_session(*session_data)

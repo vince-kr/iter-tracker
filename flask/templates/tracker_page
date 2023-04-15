@@ -43,9 +43,9 @@
           <input type="radio" name="goal_type" id="building" value="building">
           <label for="building">Build goal</label><br />
           <label for="start-time">Start</label>
-          <input type="time" name="start_time" id="start-time"><br />
+          <input type="time" name="start" id="start-time"><br />
           <label for="end-time">End</label>
-          <input type="time" name="end_time" id="end-time"><br />
+          <input type="time" name="end" id="end-time"><br />
           <input type="submit" value="Submit">
         </div>
       </form>
