@@ -10,7 +10,7 @@ class Goal:
         self._minutes_spent = minutes_spent
 
     def increase_time_spent(self, session_minutes: int) -> None:
-        """Increase time spent on goal"""
+        """Increase time spent on goal by the duration of one session"""
         self._minutes_spent += session_minutes
 
     @property
@@ -21,14 +21,6 @@ class Goal:
     def spent_as_percentage(self) -> str:
         as_perc = self._minutes_spent / self._target_in_minutes * 100
         return f"{as_perc:.2f}%"
-
-    @property
-    def construction_data(self) -> dict:
-        """Return dict of description & target to rebuild this goal object"""
-        return {
-            "description": self.description,
-            "target_in_minutes": self._target_in_minutes,
-        }
 
     def _format_time_string(self, minutes) -> str:
         """Return hh:mm string from integer of minutes"""

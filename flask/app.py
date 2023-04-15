@@ -1,3 +1,4 @@
+from datetime import date
 import json
 from os import path
 from flask import Flask, request, render_template, url_for, redirect
@@ -11,6 +12,7 @@ def index():
     if request.method == "GET":
         template_fields = ("count", "daterange", "weeks", "learning", "building")
         context = get_context(template_fields)
+        context["today"] = date.today().strftime("%Y-%m-%d")
         return render_template("tracker_page", **context)
     else:  # it's POST
         record_study_session(request.form)

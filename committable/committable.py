@@ -26,7 +26,7 @@ class Iteration(UserDict):
 
         self.data = {}
         self.data["count"] = count
-        self.data["daterange"] = self._days.daterange_as_string()
+        self.data["daterange"] = self._days.daterange_as_string
         self.data["weeks"] = self._days.by_weeks
         self.data["learning"] = self._goals["learning"]
         self.data["building"] = self._goals["building"]
@@ -44,17 +44,6 @@ class Iteration(UserDict):
         start_hr, start_min = int(start[:2]), int(start[3:])
         end_hr, end_min = int(end[:2]), int(end[3:])
         return (end_hr - start_hr) * 60 + end_min - start_min
-
-    @property
-    def as_dict(self) -> dict:
-        """Return a JSON-ifiable dictionary of data needed to rebuild Iteration object"""
-        return {
-            "count": self.data["count"],
-            "start_date": self._days.first_day,
-            "learning": self["learning"].construction_data,
-            "building": self["building"].construction_data,
-            "study_sessions": self._study_sessions,
-        }
 
 
 def get_context(template_fields: tuple, testing=False) -> None:

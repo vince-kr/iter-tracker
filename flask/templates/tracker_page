@@ -37,7 +37,7 @@
       <form method="post">
         <div id="form-fields">
           <label for="date">Date</label>
-          <input type="date" name="date" id="date"><br />
+          <input type="date" name="date" id="date" max="{{today}}" value="{{today}}"><br />
           <input type="radio" name="goal_type" id="learning" value="learning">
           <label for="learning">Learning goal</label>
           <input type="radio" name="goal_type" id="building" value="building">

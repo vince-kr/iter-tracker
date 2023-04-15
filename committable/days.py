@@ -21,6 +21,7 @@ class Days(UserDict):
     def first_day(self) -> str:
         return self._first_day.strftime("%Y-%m-%d")
 
+    @property
     def daterange_as_string(self):
         # fmt: off
         iteration_spans_multiple_months = (

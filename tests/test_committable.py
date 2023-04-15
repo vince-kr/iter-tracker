@@ -54,36 +54,6 @@ class TestIteration(object):
         assert it["learning"].time_target == "04:00"
         assert it["building"].time_target == "04:30"
 
-    # def test_afterRecordingStudySession_IterationIncreasesTimeSpentOnGoals(self):
-    #     it = self.set_up()
-    #     learning_sesh = {
-    #         "date": "2023-04-02",  # second day of the iteration
-    #         "goal_type": "learning",
-    #         "start": "20:15",
-    #         "end": "21:40",
-    #     }
-    #     building_sesh = {
-    #         "date": "2023-04-04",  # fourth day of the iteration
-    #         "goal_type": "building",
-    #         "start": "20:00",
-    #         "end": "20:45",
-    #     }
-    #     it.record_study_session(**learning_sesh)
-    #     it.record_study_session(**building_sesh)
-    #     assert it.learning.time_spent == "01:25"
-    #     assert it.learning.spent_as_percentage == "35.42%"
-    #     assert it.building.time_spent == "00:45"
-    #     assert it.building.spent_as_percentage == "16.67%"
-    #     assert it["weeks"][0] == [
-    #         "day_break",
-    #         "day_worked",
-    #         "day_break",
-    #         "day_worked",
-    #         "day_break",
-    #         "day_break",
-    #         "day_break",
-    #     ]
-
     def test_iterationGetsInstantiatedWithStudySessions(self):
         it = self.set_up(
             study_sessions=[
@@ -112,19 +82,3 @@ class TestIteration(object):
             "day_break",
             "day_break",
         ]
-
-    def test_iterationReturnsJSONifiableDictOfItself(self):
-        it = self.set_up()
-        assert it.as_dict == {
-            "count": 5,
-            "start_date": "2023-04-01",
-            "learning": {
-                "description": "My Learning Goal",
-                "target_in_minutes": 240,
-            },
-            "building": {
-                "description": "My Building Goal",
-                "target_in_minutes": 270,
-            },
-            "study_sessions": [],
-        }
