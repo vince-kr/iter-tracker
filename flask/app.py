@@ -1,7 +1,7 @@
 import json
 from os import path
 from flask import Flask, request, render_template, url_for, redirect
-from committable.iteration import get_context
+from committable.committable import get_context
 
 app = Flask(__name__)
 
