@@ -1,4 +1,3 @@
-from . import iteration
 import os
 
 # Set up local persistence
@@ -14,6 +13,3 @@ try:
     open(current_iteration_path, "x").close()
 except OSError:
     pass
-
-
-get_context = iteration.get_context
