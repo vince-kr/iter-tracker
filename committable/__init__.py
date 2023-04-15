@@ -2,12 +2,18 @@ from . import iteration
 import os
 
 # Set up local persistence
-path_to_persistence_dir = os.path.join(
-    os.path.dirname(__file__), os.pardir, "persistence"
-)
+persistence_dir_path = os.path.join(os.path.dirname(__file__), os.pardir, "persistence")
 try:
-    os.mkdir(path_to_persistence_dir)
+    os.mkdir(persistence_dir_path)
 except OSError:
     pass
+
+# Ensure persistence/live.json exists
+current_iteration_path = os.path.join(persistence_dir_path, "live.json")
+try:
+    open(current_iteration_path, "x").close()
+except OSError:
+    pass
+
 
 get_context = iteration.get_context
