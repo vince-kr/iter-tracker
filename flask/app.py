@@ -1,6 +1,4 @@
 from datetime import date
-import json
-from os import path
 from flask import Flask, request, render_template, url_for, redirect
 from committable.committable import get_context, record_study_session
 

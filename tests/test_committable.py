@@ -1,4 +1,3 @@
-import pytest
 from committable.committable import Iteration, get_context
 
 
@@ -9,18 +8,18 @@ class TestContextGetter(object):
 
 class TestIteration(object):
     def set_up(
-        self,
-        count=5,
-        start_date="2023-04-01",
-        learning={
-            "description": "My Learning Goal",
-            "target_in_minutes": 240,  # 04:00
-        },
-        building={
-            "description": "My Building Goal",
-            "target_in_minutes": 270,  # 04:30
-        },
-        study_sessions=[],
+            self,
+            count=5,
+            start_date="2023-04-01",
+            learning={
+                "description": "My Learning Goal",
+                "target_in_minutes": 240,  # 04:00
+            },
+            building={
+                "description": "My Building Goal",
+                "target_in_minutes": 270,  # 04:30
+            },
+            study_sessions=[],
     ):
         return Iteration(
             count=count,

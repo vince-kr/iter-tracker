@@ -1,6 +1,6 @@
 class Goal:
     def __init__(
-        self, description: str, target_in_minutes: int, minutes_spent: int = 0
+            self, description: str, target_in_minutes: int, minutes_spent: int = 0
     ) -> None:
         self.description = description
 
@@ -22,7 +22,8 @@ class Goal:
         as_perc = self._minutes_spent / self._target_in_minutes * 100
         return f"{as_perc:.2f}%"
 
-    def _format_time_string(self, minutes) -> str:
+    @staticmethod
+    def _format_time_string(minutes) -> str:
         """Return hh:mm string from integer of minutes"""
         hrs = minutes // 60
         mins = minutes % 60

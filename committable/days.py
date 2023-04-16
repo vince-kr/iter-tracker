@@ -1,9 +1,10 @@
 from collections import UserDict
-from datetime import timedelta
+from datetime import date, timedelta
 
 
 class Days(UserDict):
-    def __init__(self, start_date: object) -> None:
+    def __init__(self, start_date: date) -> None:
+        super().__init__()
         self._first_day = start_date
         self._last_day = self._first_day + timedelta(days=13)
         self.data = {
@@ -25,7 +26,7 @@ class Days(UserDict):
     def daterange_as_string(self):
         # fmt: off
         iteration_spans_multiple_months = (
-            self._first_day.strftime("%B") != self._last_day.strftime("%B")
+                self._first_day.strftime("%B") != self._last_day.strftime("%B")
         )
         # fmt: on
         start = self._first_day.strftime("%B %-d")

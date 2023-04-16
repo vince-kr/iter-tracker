@@ -13,3 +13,6 @@ try:
     open(current_iteration_path, "x").close()
 except OSError:
     pass
+
+# Ensure tests/test_live.json is referenced
+test_iteration_path = os.path.join(os.path.dirname(__file__), os.pardir, "tests", "test_live.json")
