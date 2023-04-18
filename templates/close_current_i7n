@@ -1,0 +1,38 @@
+<h1>closing iteration {{count}}</h1>
+<h1>{{daterange}}</h1>
+
+<section id="goals">
+    <div class="left">
+        <h2>Learning goal</h2>
+        <div class="goal-description">
+            <p>Did you meet your goal?</p>
+            <textarea class="review"></textarea>
+        </div>
+        <h2>Building goal</h2>
+        <div class="goal-description">
+            <p>Did you meet your goal?</p>
+            <textarea class="review"></textarea>
+        </div>
+    </div>
+    <div class="right">
+        <h2>Additional work</h2>
+        <div class="goal-description">
+            <p>Describe any learning or building work you completed that was not part of your goals.</p>
+            <textarea class="review"></textarea>
+        </div>
+    </div>
+</section>
+
+<section id="reflection">
+    <div class="left">
+        <h2>Reflection</h2>
+        <p>Write a brief reflection based on the following points:
+            <ul>
+                <li>Do you feel like you've made progress?</li>
+                <li>Were your goals well defined and easy to follow?</li>
+                <li>Were your goals (learning, building, and time goal) realistic?</li>
+            </ul>
+        </p>
+        <textarea class="review"></textarea>
+    </div>
+</section>
