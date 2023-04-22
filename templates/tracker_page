@@ -1,14 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base" %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iteration tracker</title>
-  <link rel="stylesheet" href="{{url_for("static", filename="style.css" )}}">
-</head>
-
-<body>
+{% block body %}
   <h1>iteration {{count}}</h1>
   <h1>{{daterange}}</h1>
 
@@ -63,13 +55,8 @@
     </div>
   </section>
 
-  <footer class="footer">
-    <div class="content has-text-centered">
-      <p>&copy; 2023 Vince</p>
-    </div>
-  </footer>
-
-  </div>
-</body>
-
-</html>
+  <section id="manage">
+    <h2>Manage iteration</h2>
+    <a href="{{url_for('close_iteration')}}">Close iteration</a>
+  </section>
+{% endblock %}

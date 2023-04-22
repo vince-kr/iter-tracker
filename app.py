@@ -15,3 +15,9 @@ def index():
     else:  # it's POST
         record_study_session(request.form)
         return redirect(url_for("index"))
+
+
+@app.route("/close", methods=["GET", "POST"])
+def close_iteration():
+    if request.method == "GET":
+        return render_template("close_current_i7n")

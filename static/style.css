@@ -68,3 +68,7 @@ form {
 .day_worked {
   background-color: #aaa;
 }
+
+textarea {
+  width: 100%;
+}
