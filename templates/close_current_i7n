@@ -7,22 +7,19 @@
     <form method="POST">
         <section id="goals">
             <div class="left">
-                <h2>Learning goal</h2>
+                <h2>Goals</h2>
                 <div class="goal-description">
-                    <p>Did you meet your goal?</p>
-                    <textarea class="review"></textarea>
-                </div>
-                <h2>Building goal</h2>
-                <div class="goal-description">
-                    <p>Did you meet your goal?</p>
-                    <textarea class="review"></textarea>
+                    <p>Did you meet your learning goal?</p>
+                    <textarea name="learning" id="learning"></textarea>
+                    <p>Did you meet your building goal?</p>
+                    <textarea name="building" id="building"></textarea>
                 </div>
             </div>
             <div class="right">
                 <h2>Additional work</h2>
                 <div class="goal-description">
                     <p>Describe any learning or building work you completed that was not part of your goals.</p>
-                    <textarea class="review" rows="4"></textarea>
+                    <textarea name="extra" id="extra" rows="4"></textarea>
                 </div>
             </div>
         </section>
@@ -37,7 +34,7 @@
                         <li>Were your goals (learning, building, and time goal) realistic?</li>
                     </ul>
                 </p>
-                <textarea class="review" rows="8"></textarea>
+                <textarea name="reflect" id="reflect" rows="8"></textarea>
             </div>
         </section>
 

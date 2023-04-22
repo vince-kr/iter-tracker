@@ -1,6 +1,6 @@
 from datetime import date
 from collections import UserDict
-from . import current_iteration_path, test_iteration_path
+from . import persistence_dir_path, current_iteration_path, test_iteration_path
 from .persistence import Persistence
 from .goal import Goal
 from .days import Days
@@ -9,14 +9,21 @@ from .days import Days
 class Iteration(UserDict):
     """Provides all fields required by the UI"""
 
-    def __init__(self, count: int, start_date: str, learning: dict, building: dict, study_sessions: list[dict]) -> None:
+    def __init__(
+        self,
+        count: int,
+        start_date: str,
+        learning: dict,
+        building: dict,
+        study_sessions: list[dict],
+    ) -> None:
         super().__init__()
         self._days = Days(date.fromisoformat(start_date))
         self._goals = {"learning": Goal(**learning), "building": Goal(**building)}
 
         self._study_sessions = study_sessions
         for session in self._study_sessions:
-            self.record_study_session(**session)
+            self._record_study_session(**session)
 
         self.data = {
             "count": count,
@@ -26,8 +33,8 @@ class Iteration(UserDict):
             "building": self._goals["building"],
         }
 
-    def record_study_session(
-            self, session_date: str, goal_type: str, start: str, end: str
+    def _record_study_session(
+        self, session_date: str, goal_type: str, start: str, end: str
     ) -> None:
         """Mark the session's date as 'worked' and increase time spent on goal"""
         self._days[session_date] = "day_worked"
@@ -56,4 +63,13 @@ def record_study_session(session_data: dict) -> str:
     current_iteration = Persistence.read(current_iteration_path)
     current_iteration["study_sessions"].append(session_data)
     error = Persistence.write(current_iteration_path, current_iteration)
+    return error
+
+
+def close_current_iteration(review_data: dict) -> str:
+    current_iteration = Persistence.read(current_iteration_path)
+    current_iteration["review"] = review_data
+    new_path = current_iteration_path.replace("live", str(current_iteration["count"]))
+    Persistence.clear(current_iteration_path)
+    error = Persistence.write(new_path, current_iteration)
     return error

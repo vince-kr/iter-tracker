@@ -13,5 +13,14 @@ class Persistence:
             with open(db_path, "w") as iteration_storage:
                 json.dump(iteration_data, iteration_storage, indent=2)
         except Exception as ex:
-            error += ex
+            error += str(ex)
+        return error
+
+    def clear(db_path: str) -> str:
+        error = ""
+        try:
+            with open(db_path, "w") as iteration_storage:
+                iteration_storage.write()
+        except Exception as ex:
+            error += str(ex)
         return error

@@ -8,18 +8,18 @@ class TestContextGetter(object):
 
 class TestIteration(object):
     def set_up(
-            self,
-            count=5,
-            start_date="2023-04-01",
-            learning={
-                "description": "My Learning Goal",
-                "target_in_minutes": 240,  # 04:00
-            },
-            building={
-                "description": "My Building Goal",
-                "target_in_minutes": 270,  # 04:30
-            },
-            study_sessions=[],
+        self,
+        count=5,
+        start_date="2023-04-01",
+        learning={
+            "description": "My Learning Goal",
+            "target_in_minutes": 240,  # 04:00
+        },
+        building={
+            "description": "My Building Goal",
+            "target_in_minutes": 270,  # 04:30
+        },
+        study_sessions=[],
     ):
         return Iteration(
             count=count,
@@ -81,3 +81,22 @@ class TestIteration(object):
             "day_break",
             "day_break",
         ]
+
+
+class TestCloseIteration(object):
+    # 1. Write Jinja2 template to show fields:
+    #   - Learning goal
+    #   - Building goal
+    #   - Additional work
+    #   - Reflection
+    # DONE
+    # 2. Write route to show this template (GET)
+    # DONE
+    # 3. Write route to handle form submission (POST)
+    # 4. Read in the current iteration
+    # 5. Add new key 'review'
+    # 6. Add keys 'learning', 'building', 'extra', 'reflect' with data from form
+    # 7. Dump the new dict as a JSON in a <iteration_counter>.json file
+    # 8. Make the current live.json file empty
+    # 9. BONUS: handle the case where the current live.json file is empty
+    pass

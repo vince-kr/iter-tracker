@@ -1,6 +1,10 @@
 from datetime import date
 from flask import Flask, request, render_template, url_for, redirect
-from committable.committable import get_context, record_study_session
+from committable.committable import (
+    get_context,
+    record_study_session,
+    close_current_iteration,
+)
 
 app = Flask(__name__)
 
@@ -21,3 +25,6 @@ def index():
 def close_iteration():
     if request.method == "GET":
         return render_template("close_current_i7n")
+    else:  # it's POST
+        close_current_iteration(request.form)
+        return redirect(url_for("index"))
