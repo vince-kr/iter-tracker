@@ -1,10 +1,14 @@
+import os
 import json
 
 
 class Persistence:
     def read(db_path: str) -> dict:
-        with open(db_path) as iteration_storage:
-            iteration_data = json.load(iteration_storage)
+        try:
+            with open(db_path) as iteration_storage:
+                iteration_data = json.load(iteration_storage)
+        except:
+            iteration_data = None
         return iteration_data
 
     def write(db_path: str, iteration_data: dict) -> str:
@@ -16,11 +20,10 @@ class Persistence:
             error += str(ex)
         return error
 
-    def clear(db_path: str) -> str:
+    def remove(db_path: str) -> str:
         error = ""
         try:
-            with open(db_path, "w") as iteration_storage:
-                iteration_storage.write()
+            os.remove(db_path)
         except Exception as ex:
             error += str(ex)
         return error

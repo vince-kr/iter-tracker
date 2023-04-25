@@ -12,3 +12,5 @@ persistence/
 .coverage
 tnc.sh
 *egg-info
+layout.odg
+

@@ -14,6 +14,8 @@ def index():
     if request.method == "GET":
         template_fields = ("count", "daterange", "weeks", "learning", "building")
         context = get_context(template_fields)
+        if not context:
+            return "No current iteration found"
         context["today"] = date.today().strftime("%Y-%m-%d")
         return render_template("tracker_page", **context)
     else:  # it's POST
@@ -26,5 +28,5 @@ def close_iteration():
     if request.method == "GET":
         return render_template("close_current_i7n")
     else:  # it's POST
-        close_current_iteration(request.form)
+        cannot_remove_current, cannot_write_new = close_current_iteration(request.form)
         return redirect(url_for("index"))

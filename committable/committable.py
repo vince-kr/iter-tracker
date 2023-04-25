@@ -55,6 +55,8 @@ def get_context(template_fields: tuple, testing=False) -> dict:
     else:
         persistence_path = current_iteration_path
     iteration_data = Persistence.read(persistence_path)
+    if not iteration_data:
+        return {}
     iteration = Iteration(**iteration_data)
     return {field_name: iteration[field_name] for field_name in template_fields}
 
@@ -66,10 +68,10 @@ def record_study_session(session_data: dict) -> str:
     return error
 
 
-def close_current_iteration(review_data: dict) -> str:
+def close_current_iteration(review_data: dict) -> tuple[str]:
     current_iteration = Persistence.read(current_iteration_path)
     current_iteration["review"] = review_data
     new_path = current_iteration_path.replace("live", str(current_iteration["count"]))
-    Persistence.clear(current_iteration_path)
-    error = Persistence.write(new_path, current_iteration)
-    return error
+    ERROR_remove_current = Persistence.remove(current_iteration_path)
+    ERROR_write_new = Persistence.write(new_path, current_iteration)
+    return (ERROR_remove_current, ERROR_write_new)
