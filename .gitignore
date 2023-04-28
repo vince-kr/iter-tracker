@@ -13,4 +13,5 @@ persistence/
 tnc.sh
 *egg-info
 layout.odg
+dependency_inversion.txt
 
