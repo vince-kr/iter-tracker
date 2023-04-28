@@ -1,21 +1,35 @@
+import os
 from datetime import date
 from collections import UserDict
-from . import persistence_dir_path, current_iteration_path, test_iteration_path
-from .persistence import Persistence
 from .goal import Goal
 from .days import Days
+
+# Set up local persistence
+persistence_dir_path = os.path.join(os.path.dirname(__file__), os.pardir, "persistence")
+try:
+    os.mkdir(persistence_dir_path)
+except OSError:
+    pass
+
+# Ensure persistence/live.json exists
+current_iteration_path = os.path.join(persistence_dir_path, "live.json")
+
+# Ensure tests/test_live.json is referenced
+test_iteration_path = os.path.join(
+    os.path.dirname(__file__), os.pardir, "tests", "test_live.json"
+)
 
 
 class Iteration(UserDict):
     """Provides all fields required by the UI"""
 
     def __init__(
-        self,
-        count: int,
-        start_date: str,
-        learning: dict,
-        building: dict,
-        study_sessions: list[dict],
+            self,
+            count: int,
+            start_date: str,
+            learning: dict,
+            building: dict,
+            study_sessions: list[dict],
     ) -> None:
         super().__init__()
         self._days = Days(date.fromisoformat(start_date))
@@ -34,7 +48,7 @@ class Iteration(UserDict):
         }
 
     def _record_study_session(
-        self, session_date: str, goal_type: str, start: str, end: str
+            self, session_date: str, goal_type: str, start: str, end: str
     ) -> None:
         """Mark the session's date as 'worked' and increase time spent on goal"""
         self._days[session_date] = "day_worked"
@@ -47,31 +61,3 @@ class Iteration(UserDict):
         start_hr, start_min = int(start[:2]), int(start[3:])
         end_hr, end_min = int(end[:2]), int(end[3:])
         return (end_hr - start_hr) * 60 + end_min - start_min
-
-
-def get_context(template_fields: tuple, testing=False) -> dict:
-    if testing:
-        persistence_path = test_iteration_path
-    else:
-        persistence_path = current_iteration_path
-    iteration_data = Persistence.read(persistence_path)
-    if not iteration_data:
-        return {}
-    iteration = Iteration(**iteration_data)
-    return {field_name: iteration[field_name] for field_name in template_fields}
-
-
-def record_study_session(session_data: dict) -> str:
-    current_iteration = Persistence.read(current_iteration_path)
-    current_iteration["study_sessions"].append(session_data)
-    error = Persistence.write(current_iteration_path, current_iteration)
-    return error
-
-
-def close_current_iteration(review_data: dict) -> tuple[str]:
-    current_iteration = Persistence.read(current_iteration_path)
-    current_iteration["review"] = review_data
-    new_path = current_iteration_path.replace("live", str(current_iteration["count"]))
-    ERROR_remove_current = Persistence.remove(current_iteration_path)
-    ERROR_write_new = Persistence.write(new_path, current_iteration)
-    return (ERROR_remove_current, ERROR_write_new)

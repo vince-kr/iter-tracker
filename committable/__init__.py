@@ -1,16 +1,30 @@
-import os
+from .committable import current_iteration_path, test_iteration_path, Iteration
+from .persistence import Persistence
 
-# Set up local persistence
-persistence_dir_path = os.path.join(os.path.dirname(__file__), os.pardir, "persistence")
-try:
-    os.mkdir(persistence_dir_path)
-except OSError:
-    pass
 
-# Ensure persistence/live.json exists
-current_iteration_path = os.path.join(persistence_dir_path, "live.json")
+def get_context(template_fields: tuple, testing=False) -> dict:
+    if testing:
+        persistence_path = test_iteration_path
+    else:
+        persistence_path = current_iteration_path
+    iteration_data = Persistence.read(persistence_path)
+    if not iteration_data:
+        return {}
+    iteration = Iteration(**iteration_data)
+    return {field_name: iteration[field_name] for field_name in template_fields}
 
-# Ensure tests/test_live.json is referenced
-test_iteration_path = os.path.join(
-    os.path.dirname(__file__), os.pardir, "tests", "test_live.json"
-)
+
+def record_study_session(session_data: dict) -> str:
+    current_iteration = Persistence.read(current_iteration_path)
+    current_iteration["study_sessions"].append(session_data)
+    error = Persistence.write(current_iteration_path, current_iteration)
+    return error
+
+
+def close_current_iteration(review_data: dict) -> tuple[str, str]:
+    current_iteration = Persistence.read(current_iteration_path)
+    current_iteration["review"] = review_data
+    new_path = current_iteration_path.replace("live", str(current_iteration["count"]))
+    error_remove_current = Persistence.remove(current_iteration_path)
+    error_write_new = Persistence.write(new_path, current_iteration)
+    return error_remove_current, error_write_new

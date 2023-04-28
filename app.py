@@ -1,6 +1,6 @@
 from datetime import date
 from flask import Flask, request, render_template, url_for, redirect
-from committable.committable import (
+from committable import (
     get_context,
     record_study_session,
     close_current_iteration,
