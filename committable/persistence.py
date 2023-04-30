@@ -3,6 +3,9 @@ import json
 
 
 class Persistence:
+    def file_exists(file_path: str) -> bool:
+        return os.path.exists(file_path)
+
     def read(db_path: str) -> dict:
         try:
             with open(db_path) as iteration_storage:

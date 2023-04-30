@@ -1,0 +1,10 @@
+{% extends "base" %}
+
+{% block body %}
+<h1>iteration tracker</h1>
+
+<div id="hero">
+    <p>ITERATION TRACKER</p>
+    <a href="{{url_for("open_iteration")}}">Start a new iteration</a>
+</div>
+{% endblock %}

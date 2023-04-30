@@ -9,6 +9,21 @@ h1 {
   font: small-caps 18px monospace;
 }
 
+#hero {
+  margin: 0 auto;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: center;
+}
+
+#hero p {
+  font-size: 5rem;
+}
+
+#hero a {
+  font-size: 3rem;
+}
+
 h2 {
   width: 70%;
   padding-bottom: .5rem;

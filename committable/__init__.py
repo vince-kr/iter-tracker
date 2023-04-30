@@ -2,6 +2,10 @@ from .committable import current_iteration_path, test_iteration_path, Iteration
 from .persistence import Persistence
 
 
+def live_iteration_exists() -> bool:
+    return Persistence.file_exists(current_iteration_path)
+
+
 def get_context(template_fields: tuple, testing=False) -> dict:
     if testing:
         persistence_path = test_iteration_path
