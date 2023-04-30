@@ -21,11 +21,11 @@ def index():
 
 @app.route("/live", methods=["GET", "POST"])
 def current_iteration():
+    if not live_iteration_exists():
+        return redirect(url_for("open_iteration"))
     if request.method == "GET":
         template_fields = ("count", "daterange", "weeks", "learning", "building")
         context = get_context(template_fields)
-        if not context:
-            return "No current iteration found"
         context["today"] = date.today().strftime("%Y-%m-%d")
         return render_template("tracker_page", **context)
     else:  # it's POST
