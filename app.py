@@ -3,6 +3,7 @@ from flask import Flask, request, render_template, url_for, redirect
 from committable import (
     get_context,
     record_study_session,
+    open_new_iteration,
     close_current_iteration,
 )
 
@@ -20,6 +21,15 @@ def index():
         return render_template("tracker_page", **context)
     else:  # it's POST
         record_study_session(request.form)
+        return redirect(url_for("index"))
+
+
+@app.route("/open", methods=["GET", "POST"])
+def open_iteration():
+    if request.method == "GET":
+        return render_template("open_new_i7n")
+    else:  # it's POST
+        open_new_iteration(request.form)
         return redirect(url_for("index"))
 
 

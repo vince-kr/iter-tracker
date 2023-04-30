@@ -21,6 +21,10 @@ def record_study_session(session_data: dict) -> str:
     return error
 
 
+def open_new_iteration(iteration_data: dict) -> None:
+    pass
+
+
 def close_current_iteration(review_data: dict) -> tuple[str, str]:
     current_iteration = Persistence.read(current_iteration_path)
     current_iteration["review"] = review_data

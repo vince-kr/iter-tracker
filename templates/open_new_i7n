@@ -1,0 +1,29 @@
+{% extends "base" %}
+
+{% block body %}
+    <h1>open new iteration</h1>
+
+    <form method="POST">
+        <section id="goals">
+            <div class="left">
+                <h2>Start</h2>
+                <div class="start_date">
+                    <p>Please select a start date</p>
+                    <input type="date" name="start_date" id="start_date">
+                </div>
+                <h2>Goals</h2>
+                <div class="goal-description">
+                    <p>Please define a learning goal</p>
+                    <textarea name="learning_desc" id="learning_desc"></textarea>
+                    <input type="time" name="learning_time" id="learning_time">
+                    <p>Please define a building goal</p>
+                    <textarea name="building" id="building"></textarea>
+                    <input type="time" name="building_time" id="building_time">
+                </div>
+            </div>
+        </section>
+
+        <a href="{{url_for('index')}}">Cancel</a>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}
