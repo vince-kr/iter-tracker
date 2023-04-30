@@ -4,7 +4,7 @@ from committable import (
     live_iteration_exists,
     get_context,
     record_study_session,
-    open_new_iteration,
+    start_new_iteration,
     close_current_iteration,
 )
 
@@ -22,7 +22,7 @@ def index():
 @app.route("/live", methods=["GET", "POST"])
 def current_iteration():
     if not live_iteration_exists():
-        return redirect(url_for("open_iteration"))
+        return redirect(url_for("start_iteration"))
     if request.method == "GET":
         template_fields = ("count", "daterange", "weeks", "learning", "building")
         context = get_context(template_fields)
@@ -33,19 +33,21 @@ def current_iteration():
         return redirect(url_for("current_iteration"))
 
 
-@app.route("/open", methods=["GET", "POST"])
-def open_iteration():
+@app.route("/new", methods=["GET", "POST"])
+def start_iteration():
     if live_iteration_exists():
         return redirect(url_for("current_iteration"))
     if request.method == "GET":
         return render_template("open_new_i7n")
     else:  # it's POST
-        open_new_iteration(request.form)
+        start_new_iteration(request.form)
         return redirect(url_for("current_iteration"))
 
 
 @app.route("/close", methods=["GET", "POST"])
 def close_iteration():
+    if not live_iteration_exists():
+        return render_template("index")
     if request.method == "GET":
         return render_template("close_current_i7n")
     else:  # it's POST

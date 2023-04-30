@@ -15,10 +15,10 @@
                 <div class="goal-description">
                     <p>Please define a learning goal</p>
                     <textarea name="learning_desc" id="learning_desc"></textarea>
-                    <input type="time" name="learning_time" id="learning_time">
+                    <input type="time" name="learning_target" id="learning_target">
                     <p>Please define a building goal</p>
-                    <textarea name="building" id="building"></textarea>
-                    <input type="time" name="building_time" id="building_time">
+                    <textarea name="building_desc" id="building_desc"></textarea>
+                    <input type="time" name="building_target" id="building_target">
                 </div>
             </div>
         </section>

@@ -1,4 +1,4 @@
-from .committable import current_iteration_path, test_iteration_path, Iteration
+from .committable import persistence_dir_path, current_iteration_path, test_iteration_path, Iteration
 from .persistence import Persistence
 
 
@@ -23,8 +23,27 @@ def record_study_session(session_data: dict) -> str:
     return error
 
 
-def open_new_iteration(iteration_data: dict) -> None:
-    pass
+def start_new_iteration(start_and_goals: dict) -> str:
+    iteration_data = {
+        "count": Persistence.get_next_count(persistence_dir_path),
+        "start_date": start_and_goals["start_date"],
+        "learning": {
+            "description": start_and_goals["learning_desc"],
+            "target_in_minutes": _get_target_time(start_and_goals["learning_target"]),
+        },
+        "building": {
+            "description": start_and_goals["building_desc"],
+            "target_in_minutes": _get_target_time(start_and_goals["building_target"]),
+        },
+        "study_sessions": [],
+    }
+    error = Persistence.write(current_iteration_path, iteration_data)
+    return error
+
+
+def _get_target_time(target_time: str) -> int:
+    hrs, mins = target_time.split(":")
+    return int(hrs) * 60 + int(mins)
 
 
 def close_current_iteration(review_data: dict) -> tuple[str, str]:
