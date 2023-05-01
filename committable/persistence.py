@@ -6,14 +6,21 @@ class Persistence:
     def file_exists(file_path: str) -> bool:
         return os.path.exists(file_path)
 
-    def get_next_count(dir_path: str) -> int:
-        current_files = os.listdir(dir_path)
-        highest = 0
-        for file in current_files:
-            count = int(file.split(".")[0])
-            if count > highest:
-                highest = count
-        return highest + 1
+    def get_count(count_path: str) -> int:
+        try:
+            with open(count_path) as nc:
+                return int(nc.read())
+        except OSError:
+            return 1
+
+    def update_count(count_path: str, new_count: str) -> str:
+        error = ""
+        try:
+            with open(count_path, "w") as nc:
+                nc.write(new_count)
+        except OSError as ex:
+            error += str(ex)
+        return error
 
     def read(db_path: str) -> dict:
         try:

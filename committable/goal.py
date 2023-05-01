@@ -1,6 +1,6 @@
 class Goal:
     def __init__(
-            self, description: str, target_in_minutes: int, minutes_spent: int = 0
+        self, description: str, target_in_minutes: int, minutes_spent: int = 0
     ) -> None:
         self.description = description
 

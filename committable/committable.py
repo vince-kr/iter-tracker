@@ -11,25 +11,28 @@ try:
 except OSError:
     pass
 
-# Ensure persistence/live.json exists
-current_iteration_path = os.path.join(persistence_dir_path, "live.json")
+# Ensure persistence/live.json is referenced
+live_iteration_path = os.path.join(persistence_dir_path, "live.json")
 
 # Ensure tests/test_live.json is referenced
 test_iteration_path = os.path.join(
     os.path.dirname(__file__), os.pardir, "tests", "test_live.json"
 )
 
+# Ensure the count path is referenced
+count_path = os.path.join(persistence_dir_path, "count")
+
 
 class Iteration(UserDict):
     """Provides all fields required by the UI"""
 
     def __init__(
-            self,
-            count: int,
-            start_date: str,
-            learning: dict,
-            building: dict,
-            study_sessions: list[dict],
+        self,
+        count: int,
+        start_date: str,
+        learning: dict,
+        building: dict,
+        study_sessions: list[dict],
     ) -> None:
         super().__init__()
         self._days = Days(date.fromisoformat(start_date))
@@ -48,7 +51,7 @@ class Iteration(UserDict):
         }
 
     def _record_study_session(
-            self, session_date: str, goal_type: str, start: str, end: str
+        self, session_date: str, goal_type: str, start: str, end: str
     ) -> None:
         """Mark the session's date as 'worked' and increase time spent on goal"""
         self._days[session_date] = "day_worked"
