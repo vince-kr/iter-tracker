@@ -22,10 +22,17 @@ def get_context(template_fields: tuple, testing: bool = False) -> dict:
     return {field_name: iteration[field_name] for field_name in template_fields}
 
 
-def record_study_session(session_data: dict) -> str:
-    current_iteration = Persistence.read(live_iteration_path)
-    current_iteration["study_sessions"].append(session_data)
-    error = Persistence.write(live_iteration_path, current_iteration)
+def record_study_session(session_data: dict, testing: bool = False) -> str:
+    if testing:
+        persistence_path = test_iteration_path
+    else:
+        persistence_path = live_iteration_path
+    iteration_data = Persistence.read(persistence_path)
+    iteration = Iteration(**iteration_data)
+    if iteration.session_out_of_daterange(session_data):
+        return "Session date is out of range for this iteration"
+    iteration_data["study_sessions"].append(session_data)
+    error = Persistence.write(live_iteration_path, iteration_data)
     return error
 
 

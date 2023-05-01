@@ -38,7 +38,7 @@ def start_iteration():
     if live_iteration_exists():
         return redirect(url_for("current_iteration"))
     if request.method == "GET":
-        return render_template("open_new_i7n")
+        return render_template("open_new_i7n", today=date.today().strftime("%Y-%m-%d"))
     else:  # it's POST
         start_new_iteration(request.form)
         return redirect(url_for("current_iteration"))
@@ -51,5 +51,5 @@ def close_iteration():
     if request.method == "GET":
         return render_template("close_current_i7n")
     else:  # it's POST
-        cannot_remove_current, cannot_write_new = close_current_iteration(request.form)
+        errors = close_current_iteration(request.form)
         return redirect(url_for("index"))

@@ -9,7 +9,7 @@
                 <h2>Start</h2>
                 <div class="start_date">
                     <p>Please select a start date</p>
-                    <input type="date" name="start_date" id="start_date">
+                    <input type="date" max={{today}} name="start_date" id="start_date">
                 </div>
                 <h2>Goals</h2>
                 <div class="goal-description">
