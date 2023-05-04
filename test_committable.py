@@ -1,4 +1,4 @@
-from committable.committable import Iteration, get_context
+from committable import Iteration, get_context
 
 
 class TestContextGetter(object):
@@ -8,18 +8,18 @@ class TestContextGetter(object):
 
 class TestIteration(object):
     def set_up(
-        self,
-        count=5,
-        start_date="2023-04-01",
-        learning={
-            "description": "My Learning Goal",
-            "target_in_minutes": 240,  # 04:00
-        },
-        building={
-            "description": "My Building Goal",
-            "target_in_minutes": 270,  # 04:30
-        },
-        study_sessions=[],
+            self,
+            count=5,
+            start_date="2023-04-01",
+            learning={
+                "description": "My Learning Goal",
+                "target_in_minutes": 240,  # 04:00
+            },
+            building={
+                "description": "My Building Goal",
+                "target_in_minutes": 270,  # 04:30
+            },
+            study_sessions=[],
     ):
         return Iteration(
             count=count,
@@ -57,13 +57,13 @@ class TestIteration(object):
         it = self.set_up(
             study_sessions=[
                 {
-                    "date": "2023-04-02",  # second day of the iteration
+                    "session_date": "2023-04-02",  # second day of the iteration
                     "goal_type": "learning",
                     "start": "20:15",
                     "end": "21:40",
                 },
                 {
-                    "date": "2023-04-04",  # fourth day of the iteration
+                    "session_date": "2023-04-04",  # fourth day of the iteration
                     "goal_type": "building",
                     "start": "20:00",
                     "end": "20:45",
@@ -81,6 +81,17 @@ class TestIteration(object):
             "day_break",
             "day_break",
         ]
+
+    def test_iterationChecksSessionInsideDaterange(self):
+        it = self.set_up()
+        valid_session_data = {
+            "session_date": "2023-04-02"
+        }
+        invalid_session_data = {
+            "session_date": "2023-05-02"
+        }
+        assert it.session_out_of_daterange(valid_session_data) == False
+        assert it.session_out_of_daterange(invalid_session_data) == True
 
 
 class TestCloseIteration(object):

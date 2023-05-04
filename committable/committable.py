@@ -48,6 +48,7 @@ class Iteration(UserDict):
             "weeks": self._days.by_weeks,
             "learning": self._goals["learning"],
             "building": self._goals["building"],
+            "today": date.today().strftime("%Y-%m-%d"),
         }
 
     def _record_study_session(

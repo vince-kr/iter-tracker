@@ -14,34 +14,33 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     if live_iteration_exists():
-        return redirect(url_for("current_iteration"))
+        return redirect(url_for("current_i7n"))
     else:
         return render_template("index")
-
-
-@app.route("/live", methods=["GET", "POST"])
-def current_iteration():
-    if not live_iteration_exists():
-        return redirect(url_for("start_iteration"))
-    if request.method == "GET":
-        template_fields = ("count", "daterange", "weeks", "learning", "building")
-        context = get_context(template_fields)
-        context["today"] = date.today().strftime("%Y-%m-%d")
-        return render_template("tracker_page", **context)
-    else:  # it's POST
-        record_study_session(request.form)
-        return redirect(url_for("current_iteration"))
 
 
 @app.route("/new", methods=["GET", "POST"])
 def start_iteration():
     if live_iteration_exists():
-        return redirect(url_for("current_iteration"))
+        return redirect(url_for("current_i7n"))
     if request.method == "GET":
         return render_template("open_new_i7n", today=date.today().strftime("%Y-%m-%d"))
     else:  # it's POST
         start_new_iteration(request.form)
-        return redirect(url_for("current_iteration"))
+        return redirect(url_for("current_i7n"))
+
+
+@app.route("/live", methods=["GET", "POST"])
+def current_iteration():
+    if not live_iteration_exists():
+        return redirect(url_for("index"))
+    if request.method == "GET":
+        template_fields = ("count", "daterange", "weeks", "learning", "building")
+        context = get_context(template_fields)
+        return render_template("current_i7n", **context)
+    else:  # it's POST
+        record_study_session(request.form)
+        return redirect(url_for("current_i7n"))
 
 
 @app.route("/close", methods=["GET", "POST"])
