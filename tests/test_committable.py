@@ -1,4 +1,5 @@
-from committable import Iteration, get_context
+from committable.committable import Iteration
+from committable import get_context
 
 
 class TestContextGetter(object):

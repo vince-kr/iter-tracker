@@ -1,5 +1,5 @@
 from datetime import date
-from flask import Flask, request, render_template, url_for, redirect
+from flask import Flask, request, render_template, url_for, redirect, flash
 from committable import (
     live_iteration_exists,
     get_context,
@@ -14,7 +14,7 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     if live_iteration_exists():
-        return redirect(url_for("current_i7n"))
+        return redirect(url_for("current_iteration"))
     else:
         return render_template("index")
 
@@ -22,12 +22,12 @@ def index():
 @app.route("/new", methods=["GET", "POST"])
 def start_iteration():
     if live_iteration_exists():
-        return redirect(url_for("current_i7n"))
+        return redirect(url_for("current_iteration"))
     if request.method == "GET":
         return render_template("open_new_i7n", today=date.today().strftime("%Y-%m-%d"))
     else:  # it's POST
         start_new_iteration(request.form)
-        return redirect(url_for("current_i7n"))
+        return redirect(url_for("current_iteration"))
 
 
 @app.route("/live", methods=["GET", "POST"])
@@ -40,7 +40,7 @@ def current_iteration():
         return render_template("current_i7n", **context)
     else:  # it's POST
         record_study_session(request.form)
-        return redirect(url_for("current_i7n"))
+        return redirect(url_for("current_iteration"))
 
 
 @app.route("/close", methods=["GET", "POST"])
